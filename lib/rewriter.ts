@@ -6,7 +6,8 @@
  * in the same shape as the Gemini API path so the UI is unaffected.
  */
 
-import type { OptimizationResult, Scores } from "./types";
+import type { OptimizationResult } from "./types";
+import { scorePrompt } from "./heuristics";
 
 // ─── Domain Detection ──────────────────────────────────────────────────────────
 
@@ -301,40 +302,25 @@ function replaceVagueWords(prompt: string): { text: string; count: number } {
   return { text: text.replace(/\s{2,}/g, " ").trim(), count };
 }
 
-// ─── Score Estimator ──────────────────────────────────────────────────────────
+// ─── Code Block Protector ─────────────────────────────────────────────────────
 
-function estimateOptimizedScores(
-  original: string,
-  hadRole: boolean,
-  hadFormat: boolean,
-  hadConstraints: boolean,
-  hadTaskVerb: boolean,
-  vagueCount: number,
-  addedCot: boolean,
-  removedNoise: boolean
-): Scores {
-  let clarity = 7.5;
-  let specificity = 7.0;
-  let structure = 7.5;
-  let completeness = 7.5;
-
-  if (!hadRole)        { completeness += 0.8; specificity += 0.5; }
-  if (!hadFormat)      { structure += 0.8; clarity += 0.3; }
-  if (!hadConstraints) { specificity += 0.7; completeness += 0.4; }
-  if (!hadTaskVerb)    { clarity += 0.5; structure += 0.3; }
-  if (vagueCount > 0)  { clarity += Math.min(vagueCount * 0.25, 1.0); }
-  if (addedCot)        { specificity += 0.3; completeness += 0.2; }
-  if (removedNoise)    { clarity += 0.2; }
-
-  if (original.length > 200) completeness += 0.3;
-  if (original.length > 500) completeness += 0.2;
-
-  const clamp = (v: number) => Math.round(Math.max(0, Math.min(10, v)) * 10) / 10;
+/**
+ * Extracts fenced code blocks so transforms (vague-word replacement, task-verb
+ * injection, etc.) cannot mangle code content. Returns a restore function.
+ */
+function protectCodeBlocks(text: string): {
+  safe: string;
+  restore: (s: string) => string;
+} {
+  const blocks: string[] = [];
+  const safe = text.replace(/```[\s\S]*?```/g, (match) => {
+    blocks.push(match);
+    return `__CODEBLOCK_${blocks.length - 1}__`;
+  });
   return {
-    clarity: clamp(clarity),
-    specificity: clamp(specificity),
-    structure: clamp(structure),
-    completeness: clamp(completeness),
+    safe,
+    restore: (s: string) =>
+      s.replace(/__CODEBLOCK_(\d+)__/g, (_, i) => blocks[Number(i)] ?? ""),
   };
 }
 
@@ -345,18 +331,27 @@ export function rewritePrompt(prompt: string): OptimizationResult {
   const domain = inferDomain(trimmed);
   const isVerbose = isVerbosePrompt(trimmed);
   const isMultiTurn = isMultiTurnPrompt(trimmed);
+  const hasCodeBlocks = /```/.test(trimmed);
 
   // ── Detect what's already present ─────────────────────────────────────────
   const hadRole        = ROLE_PATTERNS.test(trimmed);
   const hadFormat      = OUTPUT_FORMAT_KEYWORDS.test(trimmed);
   const hadConstraints = CONSTRAINT_PATTERNS.test(trimmed);
   const hadTaskVerb    = TASK_VERBS.test(trimmed);
-  const hadExamples    = EXAMPLE_PATTERNS.test(trimmed);
+  // Code blocks count as examples — don't elicit more
+  const hadExamples    = EXAMPLE_PATTERNS.test(trimmed) || hasCodeBlocks;
 
-  // ── Transforms ───────────────────────────────────────────────────────────
-  const { text: denoised, cleaned: removedNoise } = removePoliteNoise(trimmed);
-  const { text: cleanedPrompt, count: vagueCount } = replaceVagueWords(denoised);
-  const addCot = shouldInjectChainOfThought(cleanedPrompt) && !isMultiTurn;
+  // ── Protect code blocks, then apply transforms only to prose text ─────────
+  const { safe, restore } = protectCodeBlocks(trimmed);
+  const { text: denoised, cleaned: removedNoise } = removePoliteNoise(safe);
+  const { text: cleanedSafe, count: vagueCount } = replaceVagueWords(denoised);
+  // Restore code blocks back into cleaned prose
+  const cleanedPrompt = restore(cleanedSafe);
+
+  // Chain-of-thought only on analytical prompts without code blocks
+  const addCot = shouldInjectChainOfThought(cleanedPrompt) && !isMultiTurn && !hasCodeBlocks;
+  // Skip generic task-verb injection when code is present (looks wrong before a code block)
+  const shouldInjectTaskVerb = !hadTaskVerb && !hasCodeBlocks;
 
   // ── Build the rewritten prompt ────────────────────────────────────────────
   const parts: string[] = [];
@@ -377,8 +372,8 @@ export function rewritePrompt(prompt: string): OptimizationResult {
     rationalePoints.push("Added a chain-of-thought directive to improve accuracy on multi-step or analytical tasks by encouraging explicit reasoning.");
   }
 
-  // 3. Task verb / clear directive
-  if (!hadTaskVerb) {
+  // 3. Task verb / clear directive (skipped when prompt already has code blocks)
+  if (shouldInjectTaskVerb) {
     parts.push(inferTaskVerb(cleanedPrompt));
     techniquesApplied.push("Explicit Action Directive");
     rationalePoints.push("Added an explicit action verb to remove ambiguity about what output is expected from the model.");
@@ -421,8 +416,8 @@ export function rewritePrompt(prompt: string): OptimizationResult {
     rationalePoints.push("Stripped courtesy phrases that add length without adding information, improving the signal-to-noise ratio.");
   }
 
-  // 10. Example elicitation (short prompts only)
-  if (!hadExamples && !isMultiTurn && trimmed.length < 150 && trimmed.length > 20) {
+  // 10. Example elicitation (short prompts without existing code/examples only)
+  if (!hadExamples && !isMultiTurn && !hasCodeBlocks && trimmed.length < 150 && trimmed.length > 20) {
     parts.push("\nIf a concrete input/output example would clarify the expected format, include one in your response.");
     techniquesApplied.push("Example Elicitation");
     rationalePoints.push("Invited an inline example to anchor the expected output format and reduce hallucination risk.");
@@ -436,10 +431,10 @@ export function rewritePrompt(prompt: string): OptimizationResult {
 
   const optimizedPrompt = parts.join("\n\n").replace(/\n{3,}/g, "\n\n").trim();
 
-  const scores = estimateOptimizedScores(
-    trimmed, hadRole, hadFormat, hadConstraints, hadTaskVerb,
-    vagueCount, addCot, removedNoise
-  );
+  // ── Score the ACTUAL rewritten text through the real heuristic pipeline ────
+  // The rewritten prompt always has role + format + constraints injected, so it
+  // will naturally score higher on every dimension than the raw input.
+  const { scores } = scorePrompt(optimizedPrompt);
 
   // Top 3 rationale points, joined
   const rationale = rationalePoints.slice(0, 3).join(" ");
