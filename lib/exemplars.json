@@ -1,0 +1,50 @@
+[
+  {
+    "text": "You are a senior Python developer. Analyze the following code for potential security vulnerabilities, focusing on SQL injection, XSS, and authentication bypass. For each vulnerability found, provide: (1) the line number, (2) the vulnerability type, (3) severity (critical/high/medium/low), and (4) a specific fix with corrected code. Output as a JSON array.",
+    "category": "code-review"
+  },
+  {
+    "text": "Act as a data scientist specializing in time-series analysis. Given the attached monthly sales data for the past 3 years, build a forecasting model to predict the next 6 months of revenue. Use ARIMA or Prophet, justify your model choice, handle seasonality and outliers, and present results as a markdown table with confidence intervals. Include a brief methodology section (max 200 words).",
+    "category": "data-analysis"
+  },
+  {
+    "text": "You are a UX copywriter for a fintech startup. Rewrite the following error messages to be user-friendly, empathetic, and actionable. Each rewritten message must: (1) avoid technical jargon, (2) explain what went wrong in plain language, (3) suggest a clear next step. Format your output as a table with columns: Original | Rewritten | Reasoning.",
+    "category": "writing"
+  },
+  {
+    "text": "As an experienced DevOps engineer, create a comprehensive CI/CD pipeline configuration for a Node.js monorepo using GitHub Actions. Requirements: (1) run lint and unit tests on every PR, (2) build Docker images for changed services only, (3) deploy to staging on merge to main, (4) require manual approval for production deployment, (5) include rollback capability. Output the complete YAML configuration with inline comments explaining each step.",
+    "category": "devops"
+  },
+  {
+    "text": "You are a constitutional law professor. Compare and contrast the legal frameworks for freedom of speech in the United States (First Amendment) and the European Union (Article 11 of the EU Charter). Structure your analysis as follows: (1) Historical context (2 paragraphs each), (2) Scope of protection, (3) Key limitations and exceptions, (4) Landmark court cases (at least 3 per jurisdiction), (5) Modern challenges (social media, hate speech). Keep the total response under 2000 words.",
+    "category": "academic"
+  },
+  {
+    "text": "Act as a senior React developer. Refactor the following class component into a modern functional component using hooks. Requirements: convert all lifecycle methods to useEffect with proper dependency arrays, replace this.state with useState, extract reusable logic into custom hooks, add TypeScript types for all props and state, and ensure zero behavioral changes. Show the before/after diff and explain each transformation decision.",
+    "category": "code-refactoring"
+  },
+  {
+    "text": "You are a nutritionist creating a personalized meal plan. Design a 7-day meal plan for a 35-year-old vegetarian woman who is lactose intolerant, needs 1800 calories/day, and wants to maximize iron and B12 intake. For each meal, include: dish name, ingredients with quantities, prep time, calorie count, and key nutrients. Format as a structured daily schedule (breakfast, snack, lunch, snack, dinner). Include a weekly grocery list at the end.",
+    "category": "planning"
+  },
+  {
+    "text": "As a machine learning engineer, explain the transformer architecture to someone who understands basic neural networks but hasn't studied attention mechanisms. Use the following structure: (1) Motivation — why RNNs fall short, (2) Self-attention — intuition with a concrete example, (3) Multi-head attention — why multiple heads help, (4) Positional encoding — the problem and solution, (5) Full architecture diagram described in text. Use analogies where helpful. Limit to 1500 words, avoid mathematical notation where possible.",
+    "category": "education"
+  },
+  {
+    "text": "You are a product manager at a B2B SaaS company. Write a PRD (Product Requirements Document) for a new feature: team-based permissions system. Include: (1) Problem statement with user research quotes, (2) User personas (at least 3), (3) Functional requirements as user stories with acceptance criteria, (4) Non-functional requirements (performance, security, scalability), (5) Success metrics and KPIs, (6) Out of scope items, (7) Timeline estimate (t-shirt sizing). Use markdown formatting with clear headers.",
+    "category": "product"
+  },
+  {
+    "text": "Act as a cybersecurity analyst. Perform a threat model analysis for a mobile banking application using the STRIDE framework. For each threat category (Spoofing, Tampering, Repudiation, Information Disclosure, Denial of Service, Elevation of Privilege): (1) identify at least 2 specific threats, (2) assess likelihood and impact (high/medium/low), (3) propose concrete mitigations with implementation priority. Present results in a structured table format, followed by a risk heat map described in text.",
+    "category": "security"
+  },
+  {
+    "text": "You are a creative writing coach. Analyze the following short story excerpt for: (1) narrative voice — is it consistent and engaging? (2) show vs. tell — identify 3 instances of telling that could be converted to showing, with rewritten examples, (3) pacing — mark sections that feel rushed or dragged, (4) dialogue — evaluate authenticity and suggest improvements for 2 exchanges, (5) overall strengths to preserve. Be encouraging but specific. Format feedback with clear section headers.",
+    "category": "creative"
+  },
+  {
+    "text": "As a database architect, design a PostgreSQL schema for a multi-tenant e-commerce platform that supports: (1) tenant isolation via row-level security, (2) product catalog with variants and custom attributes, (3) order management with state machine transitions, (4) real-time inventory tracking across warehouses. Provide the complete CREATE TABLE statements with indexes, constraints, and RLS policies. Include an ER diagram described in text format. Explain your normalization decisions and any intentional denormalization for performance.",
+    "category": "database"
+  }
+]
