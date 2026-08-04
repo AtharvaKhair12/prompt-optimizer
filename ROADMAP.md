@@ -15,19 +15,26 @@
 - Build passes zero errors
 
 ### Session 2 (2026-08-04)
-- **Git initialized** — repo: `prompt-optimizer`, branch: `main`
-  - Commit 1: `chore: initial commit — keyless prompt optimizer with UX polish`
-  - Commit 2: `feat: smarter rewriter + live dimension bars + prompt templates`
-- **GitHub remote**: NOT YET PUSHED — need GitHub username from user
+- **Git initialized + GitHub remote set** — repo: `AtharvaKhair12/prompt-optimizer`, branch: `main`
+- **4 commits on main** (run `git log --oneline` to verify):
+  - `35ddd2d` chore: initial commit — keyless prompt optimizer with UX polish
+  - `f05f90c` feat: smarter rewriter + live dimension bars + prompt templates
+  - `f2a2f04` docs: add ROADMAP.md — session handoff and next-steps tracker
+  - `63719e1` fix: score degradation, code block mangling, uniform scores
+- **⚠️ Push still pending** — run `git push -u origin main` in a VS Code terminal to push all 4 commits
 - **Rewriter expanded** (14 domains: code, data, security, design, product, education, legal, marketing, research, writing, finance, medical, creative, devops)
-  - Smarter domain inference (score all patterns, pick best match)
+  - Smarter domain inference (scores ALL patterns, picks best match)
   - Chain-of-thought injection for analytical prompts
   - Multi-turn detection + anchoring
   - Polite noise removal
-  - Richer 3-constraint library per domain
+  - 3-constraint library per domain
 - **PromptInput upgraded**
   - Live dimension bars (clarity / specificity / structure / completeness)
-  - 8 prompt templates with "Try an example" toggle
+  - 8 prompt templates via "Try an example" toggle
+- **3 critical bugs fixed:**
+  - ✅ After-scores now always higher (real heuristics on rewritten text, not hand-estimates)
+  - ✅ Code blocks preserved through transforms (protectCodeBlocks())
+  - ✅ No "Complete the following task:" injected in front of code fences
 - **Build passes zero errors** ✓
 
 ---
