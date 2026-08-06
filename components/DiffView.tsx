@@ -109,7 +109,7 @@ export function DiffView({ original, optimized, techniques, rationale }: DiffVie
         </div>
 
         <TabsContent value="optimized" className="mt-3">
-          <Card className="bg-card/30 border-border/20">
+          <Card className="cyber-panel font-mono">
             <CardContent className="p-4">
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{optimized}</p>
             </CardContent>
@@ -117,7 +117,7 @@ export function DiffView({ original, optimized, techniques, rationale }: DiffVie
         </TabsContent>
 
         <TabsContent value="diff" className="mt-3">
-          <Card className="bg-card/30 border-border/20">
+          <Card className="cyber-panel font-mono">
             <CardContent className="p-4">
               <p className="text-sm leading-relaxed whitespace-pre-wrap">
                 {changes.map((part, i) => {
@@ -144,7 +144,7 @@ export function DiffView({ original, optimized, techniques, rationale }: DiffVie
 
         <TabsContent value="sidebyside" className="mt-3">
           <div className="grid grid-cols-2 gap-3">
-            <Card className="bg-card/30 border-border/20">
+            <Card className="cyber-panel font-mono">
               <CardHeader className="pb-2 pt-3 px-4">
                 <CardTitle className="text-xs text-muted-foreground/60 font-normal uppercase tracking-wider">
                   Original
@@ -157,7 +157,7 @@ export function DiffView({ original, optimized, techniques, rationale }: DiffVie
               </CardContent>
             </Card>
 
-            <Card className="bg-card/30 border-primary/10">
+            <Card className="cyber-panel font-mono border-primary/50 shadow-[0_0_15px_var(--primary)]">
               <CardHeader className="pb-2 pt-3 px-4">
                 <CardTitle className="text-xs text-primary/60 font-normal uppercase tracking-wider flex items-center gap-1">
                   <ArrowRight className="h-3 w-3" />

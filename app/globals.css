@@ -48,41 +48,41 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* ─── Premium Dark Theme with Violet Accents ────────────────────────────────── */
+/* ─── Cyberpunk Theme ───────────────────────────────────────────────────────── */
 
 :root {
-  --background: oklch(0.12 0.01 280);
-  --foreground: oklch(0.95 0.01 280);
-  --card: oklch(0.16 0.015 280);
-  --card-foreground: oklch(0.95 0.01 280);
-  --popover: oklch(0.16 0.015 280);
-  --popover-foreground: oklch(0.95 0.01 280);
-  --primary: oklch(0.65 0.25 280);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.22 0.02 280);
-  --secondary-foreground: oklch(0.9 0.01 280);
-  --muted: oklch(0.2 0.015 280);
-  --muted-foreground: oklch(0.65 0.02 280);
-  --accent: oklch(0.25 0.04 280);
-  --accent-foreground: oklch(0.9 0.01 280);
-  --destructive: oklch(0.65 0.2 25);
-  --border: oklch(0.25 0.02 280);
-  --input: oklch(0.22 0.02 280);
-  --ring: oklch(0.65 0.25 280);
-  --chart-1: oklch(0.65 0.25 280);
-  --chart-2: oklch(0.6 0.2 320);
-  --chart-3: oklch(0.55 0.15 200);
-  --chart-4: oklch(0.7 0.18 150);
-  --chart-5: oklch(0.75 0.12 60);
-  --radius: 0.75rem;
-  --sidebar: oklch(0.14 0.01 280);
-  --sidebar-foreground: oklch(0.95 0.01 280);
-  --sidebar-primary: oklch(0.65 0.25 280);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.22 0.02 280);
-  --sidebar-accent-foreground: oklch(0.9 0.01 280);
-  --sidebar-border: oklch(0.25 0.02 280);
-  --sidebar-ring: oklch(0.65 0.25 280);
+  --background: oklch(0.12 0.01 0);
+  --foreground: oklch(0.95 0 0);
+  --card: oklch(0.14 0.02 240);
+  --card-foreground: oklch(0.95 0.05 240);
+  --popover: oklch(0.14 0.02 240);
+  --popover-foreground: oklch(0.95 0.05 240);
+  --primary: oklch(0.9 0.25 100); /* Neon Yellow */
+  --primary-foreground: oklch(0.1 0 0);
+  --secondary: oklch(0.7 0.2 230); /* Neon Cyan */
+  --secondary-foreground: oklch(0.95 0 0);
+  --muted: oklch(0.2 0.05 230);
+  --muted-foreground: oklch(0.6 0.1 230);
+  --accent: oklch(0.6 0.3 350); /* Hot Magenta */
+  --accent-foreground: oklch(0.95 0 0);
+  --destructive: oklch(0.6 0.3 350);
+  --border: oklch(0.4 0.1 230);
+  --input: oklch(0.2 0.05 230);
+  --ring: oklch(0.9 0.25 100);
+  --chart-1: oklch(0.9 0.25 100);
+  --chart-2: oklch(0.7 0.2 230);
+  --chart-3: oklch(0.6 0.3 350);
+  --chart-4: oklch(0.8 0.15 150);
+  --chart-5: oklch(0.7 0.15 280);
+  --radius: 0;
+  --sidebar: oklch(0.12 0.01 0);
+  --sidebar-foreground: oklch(0.95 0 0);
+  --sidebar-primary: oklch(0.9 0.25 100);
+  --sidebar-primary-foreground: oklch(0.1 0 0);
+  --sidebar-accent: oklch(0.7 0.2 230);
+  --sidebar-accent-foreground: oklch(0.95 0 0);
+  --sidebar-border: oklch(0.4 0.1 230);
+  --sidebar-ring: oklch(0.9 0.25 100);
 }
 
 @layer base {
@@ -91,13 +91,29 @@
   }
   body {
     @apply bg-background text-foreground;
+    position: relative;
+    overflow-x: hidden;
+  }
+  body::after {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    z-index: 0;
   }
   html {
     @apply font-sans;
   }
 }
 
-/* ─── Custom Animations ─────────────────────────────────────────────────────── */
+/* ─── Custom Animations & Glitch ────────────────────────────────────────────── */
 
 @keyframes gradient-shift {
   0%, 100% { background-position: 0% 50%; }
@@ -107,11 +123,6 @@
 @keyframes score-fill {
   from { width: 0%; }
   to { width: var(--score-width); }
-}
-
-@keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 20px oklch(0.65 0.25 280 / 0.15); }
-  50% { box-shadow: 0 0 40px oklch(0.65 0.25 280 / 0.3); }
 }
 
 @keyframes fade-in-up {
@@ -125,9 +136,18 @@
   }
 }
 
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+@keyframes glitch {
+  0% { transform: translate(0) }
+  20% { transform: translate(-2px, 1px) }
+  40% { transform: translate(-1px, -1px) }
+  60% { transform: translate(2px, 1px) }
+  80% { transform: translate(1px, -1px) }
+  100% { transform: translate(0) }
+}
+
+@keyframes pulse-neon {
+  0%, 100% { box-shadow: 0 0 10px oklch(0.7 0.2 230 / 0.5), inset 0 0 10px oklch(0.7 0.2 230 / 0.1); border-color: oklch(0.7 0.2 230 / 0.5); }
+  50% { box-shadow: 0 0 20px oklch(0.7 0.2 230 / 1), inset 0 0 20px oklch(0.7 0.2 230 / 0.2); border-color: oklch(0.7 0.2 230); }
 }
 
 .animate-gradient {
@@ -139,76 +159,80 @@
   animation: score-fill 0.8s ease-out forwards;
 }
 
-.animate-pulse-glow {
-  animation: pulse-glow 3s ease-in-out infinite;
-}
-
 .animate-fade-in-up {
   animation: fade-in-up 0.4s ease-out forwards;
 }
 
-.animate-shimmer {
-  background: linear-gradient(
-    90deg,
-    oklch(0.2 0.015 280) 25%,
-    oklch(0.25 0.02 280) 50%,
-    oklch(0.2 0.015 280) 75%
-  );
-  background-size: 200% 100%;
-  animation: shimmer 1.5s ease-in-out infinite;
+.animate-glitch {
+  animation: glitch 2s infinite alternate;
 }
 
-/* ─── Glassmorphism Utility ─────────────────────────────────────────────────── */
+.animate-glitch-hover:hover {
+  animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+}
+
+/* ─── Cyberpunk Panel Utility ───────────────────────────────────────────────── */
+
+.cyber-panel {
+  background: oklch(0.12 0.02 240 / 0.5);
+  backdrop-filter: blur(12px);
+  border: 1px solid oklch(0.7 0.2 230 / 0.2);
+  position: relative;
+  border-radius: 4px;
+}
 
 .glass {
-  background: oklch(0.16 0.015 280 / 0.7);
-  backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid oklch(0.3 0.03 280 / 0.3);
+  background: oklch(0.12 0.02 240 / 0.6);
+  border-bottom: 1px solid oklch(0.7 0.2 230 / 0.2);
+  backdrop-filter: blur(12px);
 }
 
 /* ─── Score Colors ──────────────────────────────────────────────────────────── */
 
-.score-low { color: oklch(0.65 0.2 25); }
-.score-mid { color: oklch(0.75 0.15 85); }
-.score-high { color: oklch(0.7 0.18 150); }
+.score-low { color: oklch(0.6 0.3 350); } /* Magenta */
+.score-mid { color: oklch(0.9 0.25 100); } /* Yellow */
+.score-high { color: oklch(0.7 0.2 230); } /* Cyan */
 
-.score-bar-low { background: linear-gradient(90deg, oklch(0.65 0.2 25), oklch(0.7 0.18 40)); }
-.score-bar-mid { background: linear-gradient(90deg, oklch(0.7 0.18 60), oklch(0.75 0.15 85)); }
-.score-bar-high { background: linear-gradient(90deg, oklch(0.65 0.2 150), oklch(0.7 0.25 165)); }
+.score-bar-low { background: linear-gradient(90deg, oklch(0.6 0.3 350), oklch(0.5 0.2 350)); box-shadow: 0 0 10px oklch(0.6 0.3 350 / 0.8); }
+.score-bar-mid { background: linear-gradient(90deg, oklch(0.9 0.25 100), oklch(0.8 0.2 100)); box-shadow: 0 0 10px oklch(0.9 0.25 100 / 0.8); }
+.score-bar-high { background: linear-gradient(90deg, oklch(0.7 0.2 230), oklch(0.6 0.15 230)); box-shadow: 0 0 10px oklch(0.7 0.2 230 / 0.8); }
 
 /* ─── Diff View ─────────────────────────────────────────────────────────────── */
 
 .diff-added {
-  background: oklch(0.35 0.1 150 / 0.3);
-  color: oklch(0.8 0.15 150);
-  border-radius: 2px;
+  background: oklch(0.7 0.2 230 / 0.2);
+  color: oklch(0.7 0.2 230);
+  border-bottom: 1px solid oklch(0.7 0.2 230);
+  border-radius: 0;
   padding: 1px 2px;
 }
 
 .diff-removed {
-  background: oklch(0.35 0.1 25 / 0.3);
-  color: oklch(0.8 0.15 25);
+  background: oklch(0.6 0.3 350 / 0.2);
+  color: oklch(0.6 0.3 350);
   text-decoration: line-through;
-  border-radius: 2px;
+  border-bottom: 1px solid oklch(0.6 0.3 350);
+  border-radius: 0;
   padding: 1px 2px;
 }
 
 /* ─── Scrollbar ─────────────────────────────────────────────────────────────── */
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: oklch(0.12 0.01 0);
+  border-left: 1px solid oklch(0.7 0.2 230 / 0.3);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: oklch(0.3 0.02 280);
-  border-radius: 3px;
+  background: oklch(0.7 0.2 230);
+  border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.4 0.03 280);
+  background: oklch(0.9 0.25 100);
 }

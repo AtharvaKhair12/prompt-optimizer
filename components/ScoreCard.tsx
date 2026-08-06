@@ -191,7 +191,7 @@ export function ScoreCard({ scores, label, animated = true, prevScores }: ScoreC
   const displayedOverall = useCountUp(overall, 900, animated);
 
   return (
-    <Card className="bg-card/50 border-border/30 overflow-hidden">
+    <Card className="cyber-panel cyber-3d-tilt overflow-hidden">
       <CardContent className="p-4 space-y-4">
         {/* Header with overall score */}
         <div className="flex items-center justify-between">
@@ -231,7 +231,7 @@ export function ScoreCard({ scores, label, animated = true, prevScores }: ScoreC
 
 export function ScoreCardSkeleton() {
   return (
-    <Card className="bg-card/50 border-border/30">
+    <Card className="cyber-panel cyber-3d-tilt overflow-hidden">
       <CardContent className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div className="h-4 w-12 animate-shimmer rounded" />

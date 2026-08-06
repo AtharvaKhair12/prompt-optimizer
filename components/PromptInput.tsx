@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Loader2, Keyboard, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
+import { Sparkles, Loader2, Keyboard } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -13,56 +13,7 @@ import {
 import { scorePrompt as heuristicScore, overallScore } from "@/lib/heuristics";
 import type { Scores } from "@/lib/types";
 
-// ─── Prompt Templates ─────────────────────────────────────────────────────────
 
-interface Template {
-  label: string;
-  emoji: string;
-  text: string;
-}
-
-const TEMPLATES: Template[] = [
-  {
-    label: "Code Review",
-    emoji: "💻",
-    text: "Review this code and suggest improvements:\n\n```\n// paste your code here\n```",
-  },
-  {
-    label: "Email Writer",
-    emoji: "✉️",
-    text: "Write a professional email to [recipient] about [topic]. The tone should be [formal/friendly]. Key points to cover: [point 1], [point 2].",
-  },
-  {
-    label: "Explain Concept",
-    emoji: "🎓",
-    text: "Explain [concept] to someone with [beginner/intermediate] knowledge of [field]. Use a real-world analogy and a concrete example.",
-  },
-  {
-    label: "Data Analysis",
-    emoji: "📊",
-    text: "Analyze the following dataset and identify the top 3 insights:\n\n[paste data or describe it here]\n\nFocus on: trends, outliers, and actionable recommendations.",
-  },
-  {
-    label: "Debug Issue",
-    emoji: "🔍",
-    text: "I'm getting this error:\n\n```\n[error message]\n```\n\nHere is the relevant code:\n\n```\n[code]\n```\n\nWhat is causing it and how do I fix it?",
-  },
-  {
-    label: "Product PRD",
-    emoji: "📋",
-    text: "Write a PRD for a feature that lets users [goal]. Target users: [persona]. Success metric: [metric]. Constraints: [any constraints].",
-  },
-  {
-    label: "Marketing Copy",
-    emoji: "📣",
-    text: "Write compelling marketing copy for [product/service]. Target audience: [audience]. Key benefit: [benefit]. Tone: [tone]. Format: [landing page headline / email subject / ad copy].",
-  },
-  {
-    label: "Research Summary",
-    emoji: "🔬",
-    text: "Summarize the current state of research on [topic]. Cover: key findings, leading methodologies, open questions, and practical implications for [field/use case].",
-  },
-];
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
@@ -138,7 +89,7 @@ interface LiveScorePreviewProps {
 
 function LiveScorePreview({ scores, overall }: LiveScorePreviewProps) {
   return (
-    <div className="border border-border/30 rounded-xl bg-card/40 backdrop-blur-sm px-4 py-3 space-y-2.5 animate-fade-in-up">
+    <div className="cyber-panel px-4 py-3 space-y-2.5 animate-fade-in-up">
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">
           Live Quality Preview
@@ -155,54 +106,7 @@ function LiveScorePreview({ scores, overall }: LiveScorePreviewProps) {
   );
 }
 
-// ─── Template Picker ──────────────────────────────────────────────────────────
 
-interface TemplatePickerProps {
-  onSelect: (text: string) => void;
-}
-
-function TemplatePicker({ onSelect }: TemplatePickerProps) {
-  const [open, setOpen] = useState(false);
-
-  return (
-    <div className="space-y-2">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-1.5 text-xs text-muted-foreground/60 hover:text-muted-foreground transition-colors group"
-        aria-expanded={open}
-        aria-controls="template-grid"
-      >
-        <Lightbulb className="h-3.5 w-3.5 group-hover:text-primary/70 transition-colors" />
-        <span>Try an example</span>
-        {open ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
-      </button>
-
-      {open && (
-        <div
-          id="template-grid"
-          className="grid grid-cols-2 sm:grid-cols-4 gap-2 animate-fade-in-up"
-        >
-          {TEMPLATES.map((tpl) => (
-            <button
-              key={tpl.label}
-              onClick={() => {
-                onSelect(tpl.text);
-                setOpen(false);
-              }}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-border/30 bg-muted/10 hover:bg-muted/30 hover:border-primary/30 transition-all duration-150 text-left group"
-              title={tpl.text.slice(0, 80) + "…"}
-            >
-              <span className="text-base leading-none">{tpl.emoji}</span>
-              <span className="text-xs text-muted-foreground/70 group-hover:text-foreground transition-colors truncate">
-                {tpl.label}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
@@ -212,12 +116,14 @@ interface PromptInputProps {
   onLiveScore?: (score: number | null) => void;
 }
 
-export function PromptInput({ onOptimize, isLoading, onLiveScore }: PromptInputProps) {
-  const [prompt, setPrompt] = useState("");
+export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt = "" }: PromptInputProps & { initialPrompt?: string }) {
+  const [prompt, setPrompt] = useState(initialPrompt);
   const [liveScores, setLiveScores] = useState<Scores | null>(null);
   const [liveOverall, setLiveOverall] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
+  useEffect(() => {
+    if (initialPrompt) setPrompt(initialPrompt);
+  }, [initialPrompt]);
   const charCount = prompt.length;
   const isOverLimit = charCount > 10000;
   const canSubmit = prompt.trim().length > 0 && !isLoading && !isOverLimit;
@@ -250,10 +156,7 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore }: PromptInputP
     }
   };
 
-  const handleTemplateSelect = useCallback((text: string) => {
-    setPrompt(text);
-    setTimeout(() => textareaRef.current?.focus(), 50);
-  }, []);
+
 
   useEffect(() => {
     textareaRef.current?.focus();
@@ -261,8 +164,6 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore }: PromptInputP
 
   return (
     <div className="space-y-3">
-      {/* Template Picker */}
-      <TemplatePicker onSelect={handleTemplateSelect} />
 
       {/* Textarea */}
       <div className="relative group">
@@ -273,7 +174,7 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore }: PromptInputP
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           placeholder="Paste your prompt here… e.g., 'Write me a good email about the project update'"
-          className="min-h-[160px] max-h-[400px] resize-y bg-card/50 border-border/50 text-foreground placeholder:text-muted-foreground/50 text-base leading-relaxed transition-all duration-200 focus:border-primary/50 focus:ring-2 focus:ring-primary/20 focus:bg-card/80 pr-16"
+          className="min-h-[160px] max-h-[400px] resize-y bg-transparent border-primary/20 text-foreground placeholder:text-muted-foreground/50 text-base leading-relaxed transition-all duration-200 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 pr-16 font-mono cyber-panel shadow-none"
           disabled={isLoading}
           aria-label="Enter your prompt to optimize"
         />

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Header } from "@/components/Header";
+import { Sidebar, saveToLocalHistory } from "@/components/Sidebar";
 import { PromptInput } from "@/components/PromptInput";
 import { ScoreCard, ScoreCardSkeleton } from "@/components/ScoreCard";
 import { DiffView, DiffViewSkeleton } from "@/components/DiffView";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { saveToLocalHistory } from "@/components/HistoryPanel";
+
 import { scorePrompt as heuristicScore } from "@/lib/heuristics";
 import type { OptimizationResult, Scores, OptimizationEntry } from "@/lib/types";
 import { useSession } from "next-auth/react";
@@ -30,6 +30,9 @@ export default function Home() {
 
   // History refresh trigger
   const [historyRefresh, setHistoryRefresh] = useState(0);
+
+  // Initial prompt for template selection
+  const [initialPrompt, setInitialPrompt] = useState("");
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -100,19 +103,19 @@ export default function Home() {
     setError(null);
   }, []);
 
+  const handleTemplateSelect = useCallback((text: string) => {
+    setInitialPrompt(text);
+  }, []);
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header
-        onHistoryRestore={handleHistoryRestore}
-        historyRefreshTrigger={historyRefresh}
-      />
-
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 space-y-8">
+    <div className="flex h-screen w-full bg-background overflow-hidden relative">
+      <main className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl w-full mx-auto px-6 py-12 space-y-8">
         {/* Hero Section */}
         <div className="text-center space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-transparent animate-gradient bg-[length:200%_auto]">
+          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary uppercase animate-glitch" style={{ textShadow: "0 0 10px var(--primary), 0 0 20px var(--primary)" }}>
             Optimize Your Prompts
           </h2>
           <p className="text-muted-foreground/70 max-w-lg mx-auto text-sm sm:text-base">
@@ -138,7 +141,7 @@ export default function Home() {
         </div>
 
         {/* Prompt Input with live scoring */}
-        <PromptInput onOptimize={handleOptimize} isLoading={isLoading} />
+        <PromptInput onOptimize={handleOptimize} isLoading={isLoading} initialPrompt={initialPrompt} />
 
         {/* Error */}
         {error && (
@@ -221,14 +224,21 @@ export default function Home() {
             </div>
           </div>
         )}
+        
+        {/* Footer inside scroll area */}
+        <footer className="border-t border-border/10 mt-12 py-6 text-center text-xs text-muted-foreground/30">
+          <p>
+            100% on-device optimization — no API key, no sign-up, no data sent to third parties.
+          </p>
+        </footer>
+        </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/20 py-4 text-center text-xs text-muted-foreground/30">
-        <p>
-          100% on-device optimization — no API key, no sign-up, no data sent to third parties.
-        </p>
-      </footer>
+      <Sidebar 
+        onRestore={handleHistoryRestore}
+        onTemplateSelect={handleTemplateSelect}
+        refreshTrigger={historyRefresh}
+      />
     </div>
   );
 }
