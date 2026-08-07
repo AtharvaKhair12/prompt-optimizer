@@ -34,10 +34,10 @@ function ScoreRing({ score, max = 10 }: { score: number; max?: number }) {
 
   const color =
     score <= 3
-      ? "oklch(0.65 0.2 25)"
+      ? "oklch(0.6 0.2 20)"
       : score <= 6
-        ? "oklch(0.75 0.15 85)"
-        : "oklch(0.7 0.18 150)";
+        ? "oklch(0.8 0.15 90)"
+        : "oklch(0.7 0.15 200)";
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
@@ -61,10 +61,10 @@ function DimensionBar({ label, value }: { label: string; value: number }) {
   const pct = (value / 10) * 100;
   const color =
     value <= 3
-      ? "oklch(0.65 0.2 25)"
+      ? "oklch(0.6 0.2 20)"
       : value <= 6
-        ? "oklch(0.75 0.15 85)"
-        : "oklch(0.7 0.18 150)";
+        ? "oklch(0.8 0.15 90)"
+        : "oklch(0.7 0.15 200)";
 
   return (
     <div className="flex items-center gap-2 text-xs">
@@ -188,9 +188,9 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
               className="text-xs tabular-nums text-muted-foreground/40 transition-colors"
               style={{
                 color: isOverLimit
-                  ? "oklch(0.65 0.2 25)"
+                  ? "oklch(0.6 0.2 20)"
                   : charCount > 8000
-                    ? "oklch(0.75 0.15 85)"
+                    ? "oklch(0.8 0.15 90)"
                     : undefined,
               }}
             >

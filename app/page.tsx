@@ -1,244 +1,125 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { Sidebar, saveToLocalHistory } from "@/components/Sidebar";
-import { PromptInput } from "@/components/PromptInput";
-import { ScoreCard, ScoreCardSkeleton } from "@/components/ScoreCard";
-import { DiffView, DiffViewSkeleton } from "@/components/DiffView";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-
-import { scorePrompt as heuristicScore } from "@/lib/heuristics";
-import type { OptimizationResult, Scores, OptimizationEntry } from "@/lib/types";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { CursorGlow } from "@/components/CursorGlow";
+import { Sparkles, Zap, Brain, Shield, ChevronRight, CheckCircle2 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { AlertCircle, Zap, Brain, Sparkles } from "lucide-react";
 
-export default function Home() {
-  const { data: session } = useSession();
-
-  // ── State ──────────────────────────────────────────────────────────────────
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // Heuristic (instant) results
-  const [heuristicScores, setHeuristicScores] = useState<Scores | null>(null);
-  const [heuristicFlags, setHeuristicFlags] = useState<string[]>([]);
-
-  // Rewriter results
-  const [result, setResult] = useState<OptimizationResult | null>(null);
-  const [originalPrompt, setOriginalPrompt] = useState("");
-
-  // History refresh trigger
-  const [historyRefresh, setHistoryRefresh] = useState(0);
-
-  // Initial prompt for template selection
-  const [initialPrompt, setInitialPrompt] = useState("");
-
-  // ── Handlers ───────────────────────────────────────────────────────────────
-
-  const handleOptimize = useCallback(
-    async (prompt: string) => {
-      setError(null);
-      setOriginalPrompt(prompt);
-
-      // Phase 1: Instant heuristic scoring (client-side, zero latency)
-      const heuristics = heuristicScore(prompt);
-      setHeuristicScores(heuristics.scores);
-      setHeuristicFlags(heuristics.flags);
-
-      // Phase 2: Rule-based rewrite (server-side, no API key needed)
-      setIsLoading(true);
-      setResult(null);
-
-      try {
-        const res = await fetch("/api/optimize", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          throw new Error(data.message || "Optimization failed");
-        }
-
-        setResult(data);
-
-        // Save to local history for anonymous users
-        const entry: OptimizationEntry = {
-          id: Date.now().toString(),
-          originalPrompt: prompt,
-          optimizedPrompt: data.optimized_prompt,
-          scores: data.scores,
-          techniquesApplied: data.techniques_applied,
-          rationale: data.rationale,
-          createdAt: new Date().toISOString(),
-        };
-
-        if (!session?.user) {
-          saveToLocalHistory(entry);
-        }
-
-        setHistoryRefresh((prev) => prev + 1);
-      } catch (err: any) {
-        setError(err.message || "Something went wrong. Please try again.");
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [session]
-  );
-
-  const handleHistoryRestore = useCallback((entry: OptimizationEntry) => {
-    setOriginalPrompt(entry.originalPrompt);
-    setResult({
-      optimized_prompt: entry.optimizedPrompt,
-      scores: entry.scores,
-      techniques_applied: entry.techniquesApplied,
-      rationale: entry.rationale,
-    });
-    setHeuristicScores(null);
-    setHeuristicFlags([]);
-    setError(null);
-  }, []);
-
-  const handleTemplateSelect = useCallback((text: string) => {
-    setInitialPrompt(text);
-  }, []);
-
-  // ── Render ─────────────────────────────────────────────────────────────────
+export default function LandingPage() {
+  const { status } = useSession();
 
   return (
-    <div className="flex h-screen w-full bg-background overflow-hidden relative">
-      <main className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl w-full mx-auto px-6 py-12 space-y-8">
-        {/* Hero Section */}
-        <div className="text-center space-y-3">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-primary uppercase animate-glitch" style={{ textShadow: "0 0 10px var(--primary), 0 0 20px var(--primary)" }}>
-            Optimize Your Prompts
-          </h2>
-          <p className="text-muted-foreground/70 max-w-lg mx-auto text-sm sm:text-base">
-            Transform vague prompts into precise, well-structured instructions
-            that get better results from any LLM — instantly, no setup needed.
+    <div className="relative min-h-screen bg-background overflow-hidden flex flex-col">
+      <CursorGlow />
+
+      {/* Navbar */}
+      <header className="relative z-10 flex items-center justify-between px-6 py-4 max-w-7xl mx-auto w-full">
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded border border-primary bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_10px_var(--primary)]">
+            <Sparkles className="h-4 w-4 text-primary" />
+          </div>
+          <span className="font-bold tracking-tight text-primary uppercase">Prompt Optimizer</span>
+        </div>
+        <nav className="flex items-center gap-4">
+          {status === "authenticated" ? (
+            <Link href="/optimizer">
+              <Button variant="outline" className="border-primary/30 text-primary hover:bg-primary/10">
+                Go to Optimizer
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/register">
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-[0_0_15px_var(--primary)_inset]">
+                  Sign Up
+                </Button>
+              </Link>
+            </>
+          )}
+        </nav>
+      </header>
+
+      {/* Hero Section */}
+      <main className="flex-1 relative z-10 flex flex-col items-center justify-center px-4 py-20 text-center max-w-5xl mx-auto w-full">
+        <div className="space-y-6">
+          <div className="glitch-wrapper mb-4">
+            <h1 
+              className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tighter uppercase glitch-text" 
+              data-text="ENGINEER PERFECT PROMPTS"
+            >
+              ENGINEER PERFECT PROMPTS
+            </h1>
+          </div>
+          
+          <p className="text-muted-foreground text-lg sm:text-xl md:text-2xl max-w-2xl mx-auto leading-relaxed">
+            Elevate your AI interactions with industry-grade prompt optimization. 
+            Transform vague requests into highly structured, context-rich instructions instantly.
           </p>
 
-          {/* Pipeline badges */}
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <Badge variant="secondary" className="gap-1 text-xs bg-muted/30 text-muted-foreground/60">
-              <Zap className="h-3 w-3" />
-              Live Scoring
-            </Badge>
-            <Badge variant="secondary" className="gap-1 text-xs bg-muted/30 text-muted-foreground/60">
-              <Brain className="h-3 w-3" />
-              Domain Detection
-            </Badge>
-            <Badge variant="secondary" className="gap-1 text-xs bg-muted/30 text-muted-foreground/60">
-              <Sparkles className="h-3 w-3" />
-              Smart Rewrite
-            </Badge>
+          <div className="flex flex-wrap items-center justify-center gap-4 pt-8 animate-fade-in-up">
+            <Link href={status === "authenticated" ? "/optimizer" : "/register"}>
+              <Button size="lg" className="h-14 px-8 text-base font-semibold bg-primary hover:bg-primary/90 text-primary-foreground group">
+                Get Started for Free
+                <ChevronRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            </Link>
+            <Link href="/login">
+              <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold border-primary/20 hover:bg-primary/5">
+                Sign In to Your Account
+              </Button>
+            </Link>
           </div>
         </div>
 
-        {/* Prompt Input with live scoring */}
-        <PromptInput onOptimize={handleOptimize} isLoading={isLoading} initialPrompt={initialPrompt} />
-
-        {/* Error */}
-        {error && (
-          <Card className="border-destructive/30 bg-destructive/5 animate-fade-in-up">
-            <CardContent className="p-4 flex items-start gap-3">
-              <AlertCircle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
-              <p className="text-sm text-destructive">{error}</p>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Heuristic flags (shown instantly while rewriter is running) */}
-        {heuristicFlags.length > 0 && (
-          <div className="space-y-2 animate-fade-in-up">
-            <p className="text-xs font-medium text-muted-foreground/60 uppercase tracking-wider">
-              Instant Analysis
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mt-32 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
+          <div className="cyber-panel p-6 text-left space-y-4">
+            <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
+              <Zap className="h-5 w-5 text-primary" />
+            </div>
+            <h3 className="text-xl font-semibold">Instant Scoring</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Real-time heuristic analysis scores your prompt on clarity, specificity, structure, and completeness before you even optimize.
             </p>
-            <div className="flex flex-wrap gap-2">
-              {heuristicFlags.map((flag, i) => (
-                <Badge
-                  key={i}
-                  variant="outline"
-                  className="text-xs border-yellow-500/20 text-yellow-500/80 bg-yellow-500/5"
-                >
-                  {flag}
-                </Badge>
-              ))}
-            </div>
           </div>
-        )}
 
-        {/* Results */}
-        {(isLoading || result) && (
-          <div className="grid grid-cols-1 md:grid-cols-[280px_1fr] gap-6">
-            {/* Score Cards */}
-            <div className="space-y-4">
-              {heuristicScores && !isLoading && (
-                <div className="animate-fade-in-up">
-                  <ScoreCard scores={heuristicScores} label="Before" animated={false} />
-                </div>
-              )}
-
-              {isLoading ? (
-                <ScoreCardSkeleton />
-              ) : result ? (
-                <div className="animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-                  {/* Pass prevScores so the After card shows deltas */}
-                  <ScoreCard
-                    scores={result.scores}
-                    label="After"
-                    animated={true}
-                    prevScores={heuristicScores ?? undefined}
-                  />
-                </div>
-              ) : null}
+          <div className="cyber-panel p-6 text-left space-y-4">
+            <div className="h-10 w-10 rounded-full bg-secondary/10 flex items-center justify-center">
+              <Brain className="h-5 w-5 text-secondary" />
             </div>
-
-            {/* Diff View */}
-            <div>
-              {isLoading ? (
-                <DiffViewSkeleton />
-              ) : result ? (
-                <DiffView
-                  original={originalPrompt}
-                  optimized={result.optimized_prompt}
-                  techniques={result.techniques_applied}
-                  rationale={result.rationale}
-                />
-              ) : null}
-            </div>
+            <h3 className="text-xl font-semibold">Smart Rewrite</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Our advanced rule-based engine automatically structures your prompt, injecting best practices and domain-specific optimizations.
+            </p>
           </div>
-        )}
 
-        {/* Empty state */}
-        {!result && !isLoading && (
-          <div className="text-center pt-8 pb-12">
-            <div className="inline-flex items-center gap-2 text-muted-foreground/30 text-sm">
-              <Sparkles className="h-4 w-4" />
-              <span>Paste a prompt above to get started</span>
+          <div className="cyber-panel p-6 text-left space-y-4">
+            <div className="h-10 w-10 rounded-full bg-chart-3/10 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-chart-3" />
             </div>
+            <h3 className="text-xl font-semibold">Private History</h3>
+            <p className="text-muted-foreground leading-relaxed">
+              Securely store and retrieve your best performing prompts. Your data is privately synced to your account using MongoDB.
+            </p>
           </div>
-        )}
-        
-        {/* Footer inside scroll area */}
-        <footer className="border-t border-border/10 mt-12 py-6 text-center text-xs text-muted-foreground/30">
-          <p>
-            100% on-device optimization — no API key, no sign-up, no data sent to third parties.
-          </p>
-        </footer>
         </div>
       </main>
 
-      <Sidebar 
-        onRestore={handleHistoryRestore}
-        onTemplateSelect={handleTemplateSelect}
-        refreshTrigger={historyRefresh}
-      />
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-border/10 py-8 text-center text-sm text-muted-foreground/50">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+          <p>© 2026 Prompt Optimizer. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <span>Built for SDE III Standards</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

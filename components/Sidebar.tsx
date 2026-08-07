@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, Clock, Inbox, ChevronRight, Lightbulb, History, Sparkles } from "lucide-react";
+import { Trash2, Clock, Inbox, ChevronRight, Lightbulb, History, Sparkles, PanelLeftClose, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import type { OptimizationEntry } from "@/lib/types";
 import { AuthButton } from "./AuthButton";
@@ -30,12 +30,15 @@ export const TEMPLATES: Template[] = [
 ];
 
 interface SidebarProps {
+  isOpen?: boolean;
+  onToggle?: () => void;
+  onNewChat?: () => void;
   onRestore?: (entry: OptimizationEntry) => void;
   onTemplateSelect?: (text: string) => void;
   refreshTrigger?: number;
 }
 
-export function Sidebar({ onRestore, onTemplateSelect, refreshTrigger }: SidebarProps) {
+export function Sidebar({ isOpen = true, onToggle, onNewChat, onRestore, onTemplateSelect, refreshTrigger }: SidebarProps) {
   const { data: session } = useSession();
   const [entries, setEntries] = useState<OptimizationEntry[]>([]);
   const [loading, setLoading] = useState(false);
@@ -103,27 +106,50 @@ export function Sidebar({ onRestore, onTemplateSelect, refreshTrigger }: Sidebar
     return Math.round((s.clarity * 0.3 + s.specificity * 0.25 + s.structure * 0.25 + s.completeness * 0.2) * 10) / 10;
   };
 
+  if (!isOpen) return null;
+
   return (
-    <aside className="w-80 h-full border-l border-primary/20 bg-black/40 flex flex-col backdrop-blur-md shrink-0 z-10 relative">
-      <div className="p-4 flex items-center justify-between border-b border-primary/10">
-        <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded border border-primary bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_10px_var(--primary)]">
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-sm font-semibold tracking-tight uppercase text-primary">
-              Optimizer
+    <aside className="w-80 h-full border-r border-primary/20 bg-black/40 flex flex-col backdrop-blur-md shrink-0 z-10 relative overflow-hidden transition-all duration-300">
+      <div className="p-4 flex flex-col gap-4 border-b border-primary/10">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded border border-primary bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_10px_var(--primary)]">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold tracking-tight uppercase text-primary">
+                Optimizer
             </h1>
             <div className="flex items-center gap-1 mt-0.5">
               <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
               <p className="text-[9px] font-mono text-secondary tracking-widest uppercase">SYS.ONLINE</p>
             </div>
           </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <AuthButton />
+            {onToggle && (
+              <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                <PanelLeftClose className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
         </div>
-        <AuthButton />
+        
+        {/* New Chat Button */}
+        {onNewChat && (
+          <Button 
+            onClick={onNewChat} 
+            className="w-full justify-start gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_var(--primary)_inset]"
+            variant="outline"
+          >
+            <Plus className="h-4 w-4" />
+            New Chat
+          </Button>
+        )}
       </div>
 
-      <ScrollArea className="flex-1">
+      <div className="flex-1 overflow-y-auto">
         <div className="p-4 space-y-6">
           {/* Templates Section */}
           <section>
@@ -214,7 +240,7 @@ export function Sidebar({ onRestore, onTemplateSelect, refreshTrigger }: Sidebar
             )}
           </section>
         </div>
-      </ScrollArea>
+      </div>
     </aside>
   );
 }
