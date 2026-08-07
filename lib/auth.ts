@@ -1,47 +1,24 @@
-/**
- * Auth.js v5 configuration — Google + GitHub OAuth, JWT sessions, MongoDB adapter.
- *
- * When OAuth credentials / MongoDB URI are absent (local dev without .env.local)
- * we export stub handlers that return a clean JSON 503 response so the rest of
- * the app stays fully functional in anonymous / keyless mode.
- */
-
 import NextAuth from "next-auth";
-import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import client, { isMongoConfigured } from "./mongodb";
+import bcrypt from "bcryptjs";
 
 // ── Guard: skip real auth when credentials are missing ──────────────────────
-const missingVars = [
-  "AUTH_SECRET",
-  "AUTH_GOOGLE_ID",
-  "AUTH_GOOGLE_SECRET",
-  "AUTH_GITHUB_ID",
-  "AUTH_GITHUB_SECRET",
-].filter((key) => !process.env[key]);
-
+const missingVars = ["AUTH_SECRET", "MONGODB_URI"].filter((key) => !process.env[key]);
 const authConfigured = missingVars.length === 0 && isMongoConfigured;
 
 if (!authConfigured) {
-  const missing = [
-    ...missingVars,
-    ...(!isMongoConfigured ? ["MONGODB_URI"] : []),
-  ];
   console.warn(
-    `[auth] Missing env vars: ${missing.join(", ")}.\n` +
+    `[auth] Missing env vars: ${missingVars.join(", ")}.\n` +
       "Auth features disabled. Copy .env.local.example → .env.local and fill in values."
   );
 }
 
-// Stub handler returned when credentials are missing.
-// Auth.js client fetches /api/auth/session and expects a 200 with null/empty body.
-// Returning 503 causes "Unexpected end of JSON input" in the client.
 function stubHandler(req: NextRequest) {
   const url = new URL(req.url);
-  // Return empty session for session endpoint, 503 for everything else
   if (url.pathname.endsWith("/session")) {
     return NextResponse.json(null, { status: 200 });
   }
@@ -59,7 +36,7 @@ let signIn: (...args: unknown[]) => Promise<unknown>;
 let signOut: (...args: unknown[]) => Promise<unknown>;
 let auth: (...args: unknown[]) => Promise<unknown>;
 
-// ── Real NextAuth setup (only when fully configured) ────────────────────────
+// ── Real NextAuth setup ─────────────────────────────────────────────────────
 if (authConfigured) {
   const nextAuth = NextAuth({
     adapter: MongoDBAdapter(client!),
@@ -67,21 +44,48 @@ if (authConfigured) {
       strategy: "jwt",
     },
     providers: [
-      Google({
-        clientId: process.env.AUTH_GOOGLE_ID!,
-        clientSecret: process.env.AUTH_GOOGLE_SECRET!,
-      }),
-      GitHub({
-        clientId: process.env.AUTH_GITHUB_ID!,
-        clientSecret: process.env.AUTH_GITHUB_SECRET!,
-      }),
+      CredentialsProvider({
+        name: "Credentials",
+        credentials: {
+          email: { label: "Email", type: "email", placeholder: "you@example.com" },
+          password: { label: "Password", type: "password" }
+        },
+        async authorize(credentials) {
+          if (!credentials?.email || !credentials?.password) {
+            return null;
+          }
+
+          const mongoClient = await client;
+          const db = mongoClient.db();
+          const user = await db.collection("users").findOne({ email: credentials.email });
+
+          if (!user || !user.password) {
+            return null;
+          }
+
+          const passwordsMatch = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
+
+          if (passwordsMatch) {
+            return {
+              id: user._id.toString(),
+              email: user.email,
+              name: user.name,
+            };
+          }
+
+          return null;
+        }
+      })
     ],
     pages: {
       signIn: "/login",
     },
     callbacks: {
       async jwt({ token, user }) {
-        if (user?.id) {
+        if (user) {
           token.userId = user.id;
         }
         return token;
