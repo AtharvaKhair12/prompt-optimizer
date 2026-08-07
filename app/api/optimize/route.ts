@@ -28,8 +28,8 @@ export async function POST(request: NextRequest) {
 
     const { prompt } = parseResult.data;
 
-    // Run the built-in rule-based rewriter — always works, no key needed
-    const result = rewritePrompt(prompt);
+    // Call the LLM to rewrite the prompt dynamically
+    const result = await rewritePrompt(prompt);
 
     // If signed in and MongoDB is configured, persist to optimization history
     const session = await auth() as any;
