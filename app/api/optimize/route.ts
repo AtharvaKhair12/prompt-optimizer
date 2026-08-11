@@ -30,6 +30,13 @@ export async function POST(request: NextRequest) {
 
     // Call the LLM to rewrite the prompt dynamically
     const result = await rewritePrompt(prompt);
+    
+    // The LLM "hallucinates" its own scores in the JSON, which can be inconsistent with our frontend heuristic scorer.
+    // To ensure scores are directly comparable (apples-to-apples) and always accurately reflect the structural improvements,
+    // we recalculate the scores for the optimized prompt using our deterministic local heuristic engine.
+    const { scorePrompt } = await import("@/lib/heuristics");
+    const { scores: realScores } = scorePrompt(result.optimized_prompt);
+    result.scores = realScores;
 
     // If signed in and MongoDB is configured, persist to optimization history
     const session = await auth() as any;
