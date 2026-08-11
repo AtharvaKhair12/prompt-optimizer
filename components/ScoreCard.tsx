@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Tooltip,
@@ -8,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TiltCard } from "@/components/TiltCard";
 import type { Scores } from "@/lib/types";
 
 interface ScoreCardProps {
@@ -48,6 +50,12 @@ function getScoreColor(score: number): string {
   if (score <= 3) return "score-low";
   if (score <= 6) return "score-mid";
   return "score-high";
+}
+
+function getScoreColorValue(score: number): string {
+  if (score <= 3) return "oklch(0.6 0.22 20)";
+  if (score <= 6) return "oklch(0.8 0.15 90)";
+  return "oklch(0.72 0.18 200)";
 }
 
 function getBarClass(score: number): string {
@@ -110,7 +118,10 @@ function DeltaBadge({ delta }: { delta: number }) {
   }
   const positive = delta > 0;
   return (
-    <span
+    <motion.span
+      initial={{ scale: 0, opacity: 0 }}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ type: "spring", stiffness: 400, damping: 15, delay: 0.5 }}
       className={`inline-flex items-center gap-0.5 text-[10px] font-semibold ml-1 ${
         positive ? "text-emerald-400" : "text-red-400"
       }`}
@@ -122,7 +133,7 @@ function DeltaBadge({ delta }: { delta: number }) {
       )}
       {positive ? "+" : ""}
       {delta.toFixed(1)}
-    </span>
+    </motion.span>
   );
 }
 
@@ -146,6 +157,7 @@ function ScoreRow({
   const displayed = useCountUp(score, 800, animated);
   const width = `${(score / 10) * 100}%`;
   const delta = prevScore !== undefined ? score - prevScore : undefined;
+  const color = getScoreColorValue(score);
 
   return (
     <Tooltip>
@@ -158,21 +170,21 @@ function ScoreRow({
                 {label}
               </span>
               <span className="flex items-center">
-                <span className={`font-semibold tabular-nums ${getScoreColor(score)}`}>
+                <span className={`font-bold tabular-nums ${getScoreColor(score)}`}>
                   {displayed.toFixed(1)}
                 </span>
                 {delta !== undefined && <DeltaBadge delta={delta} />}
               </span>
             </div>
-            <div className="h-1.5 bg-muted/30 rounded-full overflow-hidden">
-              <div
-                className={`h-full rounded-full ${getBarClass(score)} ${animated ? "animate-score-fill" : ""}`}
-                style={
-                  {
-                    "--score-width": width,
-                    width: animated ? undefined : width,
-                  } as React.CSSProperties
-                }
+            <div className="h-2 bg-muted/20 rounded-full overflow-hidden">
+              <motion.div
+                className={`h-full rounded-full ${getBarClass(score)}`}
+                initial={animated ? { width: 0 } : { width }}
+                animate={{ width }}
+                transition={{ duration: 1, ease: [0.16, 1, 0.3, 1], delay: animated ? 0.2 : 0 }}
+                style={{
+                  boxShadow: `0 0 12px ${color}`,
+                }}
               />
             </div>
           </div>
@@ -189,53 +201,77 @@ export function ScoreCard({ scores, label, animated = true, prevScores }: ScoreC
   const overall = getOverallScore(scores);
   const prevOverall = prevScores ? getOverallScore(prevScores) : undefined;
   const displayedOverall = useCountUp(overall, 900, animated);
+  const overallColor = getScoreColorValue(overall);
+
+  // SVG circular progress
+  const radius = 28;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference * (1 - overall / 10);
 
   return (
-    <Card className="cyber-panel cyber-3d-tilt overflow-hidden">
-      <CardContent className="p-4 space-y-4">
-        {/* Header with overall score */}
-        <div className="flex items-center justify-between">
-          <span className="text-sm font-medium text-muted-foreground">
-            {label || "Score"}
-          </span>
-          <div className="flex items-center gap-1.5">
-            <span className={`text-2xl font-bold tabular-nums ${getScoreColor(overall)}`}>
-              {displayedOverall.toFixed(1)}
+    <TiltCard className="rounded-xl" tiltDegree={8}>
+      <Card className="cyber-panel-premium overflow-hidden border-0">
+        <CardContent className="p-5 space-y-4">
+          {/* Header with circular score */}
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+              {label || "Score"}
             </span>
-            <span className="text-xs text-muted-foreground/50">/10</span>
-            {prevOverall !== undefined && (
-              <DeltaBadge delta={overall - prevOverall} />
-            )}
+            <div className="relative flex items-center justify-center" style={{ width: 64, height: 64 }}>
+              <svg width="64" height="64" style={{ transform: "rotate(-90deg)" }}>
+                <circle cx="32" cy="32" r={radius} fill="none" stroke="oklch(0.2 0.02 260)" strokeWidth="4" />
+                <motion.circle
+                  cx="32" cy="32" r={radius} fill="none"
+                  stroke={overallColor} strokeWidth="4" strokeLinecap="round"
+                  strokeDasharray={circumference}
+                  initial={animated ? { strokeDashoffset: circumference } : { strokeDashoffset: offset }}
+                  animate={{ strokeDashoffset: offset }}
+                  transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+                  style={{ filter: `drop-shadow(0 0 6px ${overallColor})` }}
+                />
+              </svg>
+              <div className="absolute flex flex-col items-center">
+                <span className={`text-lg font-black tabular-nums ${getScoreColor(overall)}`}>
+                  {displayedOverall.toFixed(1)}
+                </span>
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Individual scores */}
-        <div className="space-y-3">
-          {SCORE_CONFIG.map(({ key, label: scoreLabel, description, icon }) => (
-            <ScoreRow
-              key={key}
-              scoreKey={key}
-              label={scoreLabel}
-              description={description}
-              icon={icon}
-              score={scores[key]}
-              prevScore={prevScores?.[key]}
-              animated={animated}
-            />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          {prevOverall !== undefined && (
+            <div className="flex justify-end -mt-2">
+              <DeltaBadge delta={overall - prevOverall} />
+            </div>
+          )}
+
+          {/* Individual scores */}
+          <div className="space-y-3">
+            {SCORE_CONFIG.map(({ key, label: scoreLabel, description, icon }) => (
+              <ScoreRow
+                key={key}
+                scoreKey={key}
+                label={scoreLabel}
+                description={description}
+                icon={icon}
+                score={scores[key]}
+                prevScore={prevScores?.[key]}
+                animated={animated}
+              />
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    </TiltCard>
   );
 }
 
 export function ScoreCardSkeleton() {
   return (
-    <Card className="cyber-panel cyber-3d-tilt overflow-hidden">
-      <CardContent className="p-4 space-y-4">
+    <Card className="cyber-panel-premium overflow-hidden border-0">
+      <CardContent className="p-5 space-y-4">
         <div className="flex items-center justify-between">
           <div className="h-4 w-12 animate-shimmer rounded" />
-          <div className="h-8 w-16 animate-shimmer rounded" />
+          <div className="h-16 w-16 animate-shimmer rounded-full" />
         </div>
         <div className="space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -244,7 +280,7 @@ export function ScoreCardSkeleton() {
                 <div className="h-4 w-20 animate-shimmer rounded" />
                 <div className="h-4 w-6 animate-shimmer rounded" />
               </div>
-              <div className="h-1.5 animate-shimmer rounded-full" />
+              <div className="h-2 animate-shimmer rounded-full" />
             </div>
           ))}
         </div>
