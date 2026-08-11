@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { Trash2, Clock, Inbox, ChevronRight, Lightbulb, History, Sparkles, PanelLeftClose, Plus } from "lucide-react";
+import { Trash2, Clock, Inbox, Lightbulb, History, Sparkles, PanelLeftClose, Plus } from "lucide-react";
 import { useSession } from "next-auth/react";
 import type { OptimizationEntry } from "@/lib/types";
 import { AuthButton } from "./AuthButton";
@@ -106,142 +106,162 @@ export function Sidebar({ isOpen = true, onToggle, onNewChat, onRestore, onTempl
     return Math.round((s.clarity * 0.3 + s.specificity * 0.25 + s.structure * 0.25 + s.completeness * 0.2) * 10) / 10;
   };
 
-  if (!isOpen) return null;
-
   return (
-    <aside className="w-80 h-full border-r border-primary/20 bg-black/40 flex flex-col backdrop-blur-md shrink-0 z-10 relative overflow-hidden transition-all duration-300">
-      <div className="p-4 flex flex-col gap-4 border-b border-primary/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded border border-primary bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_10px_var(--primary)]">
-              <Sparkles className="h-4 w-4 text-primary" />
+    <AnimatePresence mode="wait">
+      {isOpen && (
+        <motion.aside
+          initial={{ x: -320, opacity: 0 }}
+          animate={{ x: 0, opacity: 1 }}
+          exit={{ x: -320, opacity: 0 }}
+          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+          className="w-80 h-full border-r border-primary/15 bg-black/50 flex flex-col backdrop-blur-xl shrink-0 z-10 relative overflow-hidden"
+        >
+          {/* Sidebar gradient accent */}
+          <div className="absolute top-0 right-0 w-px h-full bg-gradient-to-b from-primary/30 via-secondary/20 to-transparent" />
+
+          <div className="p-4 flex flex-col gap-4 border-b border-primary/10">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="h-8 w-8 rounded-lg border border-primary/40 bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_12px_var(--primary)]">
+                  <Sparkles className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h1 className="text-sm font-bold tracking-tight uppercase gradient-text-static">
+                    Optimizer
+                  </h1>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                    <p className="text-[9px] font-mono text-green-400/80 tracking-widest uppercase">SYS.ONLINE</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <AuthButton />
+                {onToggle && (
+                  <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10">
+                    <PanelLeftClose className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
             </div>
-            <div>
-              <h1 className="text-sm font-semibold tracking-tight uppercase text-primary">
-                Optimizer
-            </h1>
-            <div className="flex items-center gap-1 mt-0.5">
-              <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse" />
-              <p className="text-[9px] font-mono text-secondary tracking-widest uppercase">SYS.ONLINE</p>
-            </div>
-          </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <AuthButton />
-            {onToggle && (
-              <Button variant="ghost" size="icon" onClick={onToggle} className="h-8 w-8 text-muted-foreground hover:text-primary">
-                <PanelLeftClose className="h-4 w-4" />
+            
+            {/* New Chat Button */}
+            {onNewChat && (
+              <Button 
+                onClick={onNewChat} 
+                className="w-full justify-start gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_var(--primary)_inset] btn-3d font-semibold"
+                variant="outline"
+              >
+                <Plus className="h-4 w-4" />
+                New Chat
               </Button>
             )}
           </div>
-        </div>
-        
-        {/* New Chat Button */}
-        {onNewChat && (
-          <Button 
-            onClick={onNewChat} 
-            className="w-full justify-start gap-2 bg-primary/10 hover:bg-primary/20 text-primary border border-primary/30 shadow-[0_0_10px_var(--primary)_inset]"
-            variant="outline"
-          >
-            <Plus className="h-4 w-4" />
-            New Chat
-          </Button>
-        )}
-      </div>
 
-      <div className="flex-1 overflow-y-auto">
-        <div className="p-4 space-y-6">
-          {/* Templates Section */}
-          <section>
-            <h2 className="text-xs font-mono uppercase tracking-wider text-muted-foreground/50 mb-3 flex items-center gap-2">
-              <Lightbulb className="h-3 w-3" /> Templates
-            </h2>
-            <div className="grid grid-cols-1 gap-2">
-              {TEMPLATES.map((tpl) => (
-                <button
-                  key={tpl.label}
-                  onClick={() => onTemplateSelect?.(tpl.text)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded border border-primary/10 bg-primary/5 hover:bg-primary/10 hover:border-primary/30 transition-all text-left group"
-                >
-                  <span className="text-base leading-none">{tpl.emoji}</span>
-                  <span className="text-xs text-muted-foreground/80 group-hover:text-foreground transition-colors truncate">
-                    {tpl.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </section>
+          <div className="flex-1 overflow-y-auto">
+            <div className="p-4 space-y-6">
+              {/* Templates Section */}
+              <section>
+                <h2 className="text-xs font-mono uppercase tracking-wider text-muted-foreground/50 mb-3 flex items-center gap-2">
+                  <Lightbulb className="h-3 w-3" /> Templates
+                </h2>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {TEMPLATES.map((tpl, i) => (
+                    <motion.button
+                      key={tpl.label}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.04, duration: 0.3 }}
+                      onClick={() => onTemplateSelect?.(tpl.text)}
+                      className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-transparent bg-transparent hover:bg-primary/8 hover:border-primary/20 transition-all text-left group"
+                    >
+                      <span className="text-base leading-none group-hover:scale-110 transition-transform">{tpl.emoji}</span>
+                      <span className="text-xs text-muted-foreground/70 group-hover:text-foreground/90 transition-colors truncate">
+                        {tpl.label}
+                      </span>
+                    </motion.button>
+                  ))}
+                </div>
+              </section>
 
-          <Separator className="bg-primary/10" />
+              <Separator className="bg-primary/8" />
 
-          {/* History Section */}
-          <section>
-            <h2 className="text-xs font-mono uppercase tracking-wider text-muted-foreground/50 mb-3 flex items-center gap-2">
-              <History className="h-3 w-3" /> History
-            </h2>
-            {loading ? (
-              <div className="space-y-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="p-3 space-y-2 border border-primary/10 rounded">
-                    <div className="h-3 w-3/4 animate-shimmer rounded bg-primary/10" />
-                    <div className="h-2 w-1/2 animate-shimmer rounded bg-primary/5" />
-                  </div>
-                ))}
-              </div>
-            ) : entries.length === 0 ? (
-              <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-primary/20 rounded">
-                <Inbox className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                <p className="text-xs text-muted-foreground/50">No history yet</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {entries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    className="group p-3 rounded border border-primary/10 bg-black/40 hover:bg-primary/10 hover:border-primary/30 transition-colors cursor-pointer"
-                    onClick={() => onRestore?.(entry)}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-foreground/90 truncate font-mono">
-                          {entry.originalPrompt.length > 50 ? entry.originalPrompt.slice(0, 50) + "…" : entry.originalPrompt}
-                        </p>
-                        <div className="flex items-center gap-2 mt-2">
-                          <Clock className="h-3 w-3 text-muted-foreground/40" />
-                          <span className="text-[10px] text-muted-foreground/50 font-mono">
-                            {formatTime(entry.createdAt)}
-                          </span>
-                          <span
-                            className={`text-[10px] font-mono font-semibold tabular-nums ${
-                              getOverallScore(entry) > 6 ? "score-high" : getOverallScore(entry) > 3 ? "score-mid" : "score-low"
-                            }`}
-                          >
-                            {getOverallScore(entry)}/10
-                          </span>
-                        </div>
+              {/* History Section */}
+              <section>
+                <h2 className="text-xs font-mono uppercase tracking-wider text-muted-foreground/50 mb-3 flex items-center gap-2">
+                  <History className="h-3 w-3" /> History
+                </h2>
+                {loading ? (
+                  <div className="space-y-2">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <div key={i} className="p-3 space-y-2 rounded-lg">
+                        <div className="h-3 w-3/4 animate-shimmer rounded" />
+                        <div className="h-2 w-1/2 animate-shimmer rounded" />
                       </div>
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-6 w-6 text-destructive/50 hover:text-destructive hover:bg-destructive/10"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDelete(entry.id);
-                          }}
+                    ))}
+                  </div>
+                ) : entries.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-primary/15 rounded-lg">
+                    <Inbox className="h-8 w-8 text-muted-foreground/20 mb-2" />
+                    <p className="text-xs text-muted-foreground/40">No history yet</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1.5">
+                    <AnimatePresence>
+                      {entries.map((entry, i) => (
+                        <motion.div
+                          key={entry.id}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, x: -40, transition: { duration: 0.2 } }}
+                          transition={{ delay: i * 0.03, duration: 0.3 }}
+                          className="group p-3 rounded-lg border border-transparent bg-transparent hover:bg-primary/8 hover:border-primary/20 transition-all cursor-pointer"
+                          onClick={() => onRestore?.(entry)}
                         >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    </div>
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs text-foreground/80 truncate font-mono">
+                                {entry.originalPrompt.length > 50 ? entry.originalPrompt.slice(0, 50) + "…" : entry.originalPrompt}
+                              </p>
+                              <div className="flex items-center gap-2 mt-2">
+                                <Clock className="h-3 w-3 text-muted-foreground/30" />
+                                <span className="text-[10px] text-muted-foreground/40 font-mono">
+                                  {formatTime(entry.createdAt)}
+                                </span>
+                                <span
+                                  className={`text-[10px] font-mono font-bold tabular-nums ${
+                                    getOverallScore(entry) > 6 ? "score-high" : getOverallScore(entry) > 3 ? "score-mid" : "score-low"
+                                  }`}
+                                >
+                                  {getOverallScore(entry)}/10
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 text-destructive/40 hover:text-destructive hover:bg-destructive/10"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDelete(entry.id);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
                   </div>
-                ))}
-              </div>
-            )}
-          </section>
-        </div>
-      </div>
-    </aside>
+                )}
+              </section>
+            </div>
+          </div>
+        </motion.aside>
+      )}
+    </AnimatePresence>
   );
 }
 

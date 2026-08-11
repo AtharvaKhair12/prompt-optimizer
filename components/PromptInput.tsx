@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,20 +35,23 @@ function ScoreRing({ score, max = 10 }: { score: number; max?: number }) {
 
   const color =
     score <= 3
-      ? "oklch(0.6 0.2 20)"
+      ? "oklch(0.6 0.22 20)"
       : score <= 6
         ? "oklch(0.8 0.15 90)"
-        : "oklch(0.7 0.15 200)";
+        : "oklch(0.72 0.18 200)";
 
   return (
     <div className="relative flex items-center justify-center" style={{ width: 44, height: 44 }}>
       <svg width="44" height="44" style={{ transform: "rotate(-90deg)" }}>
-        <circle cx="22" cy="22" r={radius} fill="none" stroke="oklch(0.25 0.02 280)" strokeWidth="3" />
+        <circle cx="22" cy="22" r={radius} fill="none" stroke="oklch(0.22 0.02 260)" strokeWidth="3" />
         <circle
           cx="22" cy="22" r={radius} fill="none"
           stroke={color} strokeWidth="3" strokeLinecap="round"
           strokeDasharray={circumference} strokeDashoffset={offset}
-          style={{ transition: "stroke-dashoffset 0.5s ease, stroke 0.3s ease" }}
+          style={{ 
+            transition: "stroke-dashoffset 0.5s ease, stroke 0.3s ease",
+            filter: `drop-shadow(0 0 4px ${color})`,
+          }}
         />
       </svg>
       <span className="absolute text-[11px] font-bold tabular-nums" style={{ color, transition: "color 0.3s ease" }}>
@@ -61,18 +65,24 @@ function DimensionBar({ label, value }: { label: string; value: number }) {
   const pct = (value / 10) * 100;
   const color =
     value <= 3
-      ? "oklch(0.6 0.2 20)"
+      ? "oklch(0.6 0.22 20)"
       : value <= 6
         ? "oklch(0.8 0.15 90)"
-        : "oklch(0.7 0.15 200)";
+        : "oklch(0.72 0.18 200)";
 
   return (
     <div className="flex items-center gap-2 text-xs">
       <span className="w-24 text-muted-foreground/60 capitalize shrink-0">{label}</span>
-      <div className="flex-1 h-1.5 rounded-full bg-muted/30 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-500 ease-out"
-          style={{ width: `${pct}%`, backgroundColor: color }}
+      <div className="flex-1 h-1.5 rounded-full bg-muted/20 overflow-hidden">
+        <motion.div
+          className="h-full rounded-full"
+          initial={{ width: 0 }}
+          animate={{ width: `${pct}%` }}
+          transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          style={{ 
+            backgroundColor: color,
+            boxShadow: `0 0 10px ${color}`,
+          }}
         />
       </div>
       <span className="w-6 text-right tabular-nums font-medium" style={{ color }}>
@@ -89,7 +99,13 @@ interface LiveScorePreviewProps {
 
 function LiveScorePreview({ scores, overall }: LiveScorePreviewProps) {
   return (
-    <div className="cyber-panel px-4 py-3 space-y-2.5 animate-fade-in-up">
+    <motion.div
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -10 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="cyber-panel-premium px-4 py-3 space-y-2.5"
+    >
       <div className="flex items-center justify-between">
         <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/50">
           Live Quality Preview
@@ -102,7 +118,7 @@ function LiveScorePreview({ scores, overall }: LiveScorePreviewProps) {
         <DimensionBar label="Structure" value={scores.structure} />
         <DimensionBar label="Completeness" value={scores.completeness} />
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -120,6 +136,7 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
   const [prompt, setPrompt] = useState(initialPrompt);
   const [liveScores, setLiveScores] = useState<Scores | null>(null);
   const [liveOverall, setLiveOverall] = useState<number | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   useEffect(() => {
     if (initialPrompt) setPrompt(initialPrompt);
@@ -156,25 +173,40 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
     }
   };
 
-
-
   useEffect(() => {
     textareaRef.current?.focus();
   }, []);
 
   return (
     <div className="space-y-3">
-
-      {/* Textarea */}
-      <div className="relative group">
+      {/* Textarea with animated glow border */}
+      <div className={`relative group transition-all duration-500 rounded-xl ${isFocused ? "shadow-[0_0_30px_oklch(0.65_0.22_290_/_0.15)]" : ""}`}>
+        {/* Animated gradient border on focus */}
+        <div
+          className="absolute -inset-[1px] rounded-xl transition-opacity duration-500 pointer-events-none"
+          style={{
+            opacity: isFocused ? 1 : 0,
+            background: "linear-gradient(135deg, oklch(0.65 0.22 290 / 0.5), oklch(0.72 0.18 200 / 0.3), oklch(0.65 0.22 290 / 0.5))",
+            backgroundSize: "200% 200%",
+            animation: isFocused ? "gradient-shift 3s ease infinite" : "none",
+            borderRadius: "inherit",
+            mask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            maskComposite: "exclude",
+            WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+            WebkitMaskComposite: "xor",
+            padding: "1px",
+          }}
+        />
         <Textarea
           ref={textareaRef}
           id="prompt-input"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder="Paste your prompt here… e.g., 'Write me a good email about the project update'"
-          className="min-h-[160px] max-h-[400px] resize-y bg-transparent border-primary/20 text-foreground placeholder:text-muted-foreground/50 text-base leading-relaxed transition-all duration-200 focus:border-primary/50 focus:ring-1 focus:ring-primary/20 pr-16 font-mono cyber-panel shadow-none"
+          className="min-h-[160px] max-h-[400px] resize-y bg-black/30 border-primary/15 text-foreground placeholder:text-muted-foreground/40 text-base leading-relaxed transition-all duration-300 focus:border-primary/40 focus:ring-0 pr-16 font-mono rounded-xl backdrop-blur-sm shadow-none"
           disabled={isLoading}
           aria-label="Enter your prompt to optimize"
         />
@@ -188,7 +220,7 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
               className="text-xs tabular-nums text-muted-foreground/40 transition-colors"
               style={{
                 color: isOverLimit
-                  ? "oklch(0.6 0.2 20)"
+                  ? "oklch(0.6 0.22 20)"
                   : charCount > 8000
                     ? "oklch(0.8 0.15 90)"
                     : undefined,
@@ -204,9 +236,11 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
       </div>
 
       {/* Live dimension bars */}
-      {liveScores && liveOverall !== null && (
-        <LiveScorePreview scores={liveScores} overall={liveOverall} />
-      )}
+      <AnimatePresence>
+        {liveScores && liveOverall !== null && (
+          <LiveScorePreview scores={liveScores} overall={liveOverall} />
+        )}
+      </AnimatePresence>
 
       {/* Action row */}
       <div className="flex items-center gap-3">
@@ -215,8 +249,10 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
           onClick={handleSubmit}
           disabled={!canSubmit}
           size="lg"
-          className="relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-8 transition-all duration-200 disabled:opacity-40"
+          className="relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground font-bold px-8 transition-all duration-300 disabled:opacity-40 btn-3d group"
         >
+          {/* Shimmer sweep on hover */}
+          <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/10 to-transparent pointer-events-none" />
           {isLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -233,9 +269,9 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
         <Tooltip>
           <TooltipTrigger
             render={
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground/50">
                 <Keyboard className="h-3.5 w-3.5" />
-                <kbd className="px-1.5 py-0.5 bg-muted/50 rounded text-[10px] font-mono">
+                <kbd className="px-1.5 py-0.5 bg-muted/30 rounded text-[10px] font-mono border border-border/20">
                   Ctrl+Enter
                 </kbd>
               </div>
@@ -251,7 +287,7 @@ export function PromptInput({ onOptimize, isLoading, onLiveScore, initialPrompt 
             variant="ghost"
             size="sm"
             onClick={() => setPrompt("")}
-            className="text-muted-foreground/60 hover:text-foreground ml-auto"
+            className="text-muted-foreground/50 hover:text-foreground ml-auto"
           >
             Clear
           </Button>
