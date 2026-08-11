@@ -19,7 +19,7 @@ You MUST return your response as a raw JSON object and nothing else. Do not use 
   "techniques_applied": ["Expert Persona", "Structured Formatting"],
   "rationale": "Why this is better"
 }
-Note: All scores must be numbers between 0 and 10.`;
+Note: All scores must be numbers between 0 and 10. IMPORTANT: You must properly escape all newlines as \\n in your JSON string values.`;
 
 export async function rewritePrompt(prompt: string): Promise<OptimizationResult> {
   if (!process.env.GROQ_API_KEY) {
@@ -33,9 +33,26 @@ export async function rewritePrompt(prompt: string): Promise<OptimizationResult>
   });
 
   try {
-    const rawText = result.text.replace(/```json/g, '').replace(/```/g, '').trim();
-    const parsed = JSON.parse(rawText);
+    const rawText = result.text.trim();
+    const startIndex = rawText.indexOf('{');
+    const endIndex = rawText.lastIndexOf('}');
     
+    if (startIndex === -1 || endIndex === -1) {
+      throw new Error("No JSON object found in response");
+    }
+    
+    let jsonString = rawText.substring(startIndex, endIndex + 1);
+    
+    // Sanitization for common LLM JSON errors:
+    // 1. Remove illegal single quote escapes (\') which throw SyntaxError in JSON.parse
+    jsonString = jsonString.replace(/\\'/g, "'");
+    
+    // 2. Collapse structural and literal newlines into spaces.
+    // This safely eliminates any literal newlines inside strings without affecting 
+    // proper escaped newlines (\n) or breaking the JSON structure.
+    jsonString = jsonString.replace(/\n/g, " ").replace(/\r/g, "");
+    
+    const parsed = JSON.parse(jsonString);
     return {
       optimized_prompt: parsed.optimized_prompt,
       scores: parsed.scores,
