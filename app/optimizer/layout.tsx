@@ -6,7 +6,7 @@ export default async function OptimizerLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const session = await auth() as any;
 
   if (!session?.user) {
     redirect("/login");

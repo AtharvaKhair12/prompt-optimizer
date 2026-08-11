@@ -56,6 +56,7 @@ if (authConfigured) {
           }
 
           const mongoClient = await client;
+          if (!mongoClient) return null;
           const db = mongoClient.db();
           const user = await db.collection("users").findOne({ email: credentials.email });
 

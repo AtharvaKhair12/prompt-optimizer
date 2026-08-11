@@ -11,6 +11,9 @@ export async function POST(req: Request) {
     }
 
     const mongoClient = await client;
+    if (!mongoClient) {
+      return NextResponse.json({ message: "Database connection unavailable" }, { status: 503 });
+    }
     const db = mongoClient.db();
     
     // Check if user already exists
