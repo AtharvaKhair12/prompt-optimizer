@@ -8,7 +8,9 @@ import { TypewriterText } from "@/components/TypewriterText";
 import { TiltCard } from "@/components/TiltCard";
 import { AnimatedCounter } from "@/components/AnimatedCounter";
 import { ScrollReveal, StaggerContainer, StaggerItem } from "@/components/ScrollReveal";
-import { Sparkles, Zap, Brain, Shield, ChevronRight, ArrowRight, Terminal, Layers, BarChart3, Lock, Globe, Cpu } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { FooterSection } from "@/components/FooterSection";
+import { Zap, Brain, Shield, ChevronRight, ArrowRight, Terminal, Layers, BarChart3, Lock, Globe, Cpu } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 // Lazy-load 3D scene (heavy) — only on landing page
@@ -35,40 +37,10 @@ export default function LandingPage() {
       </div>
 
       {/* ═══ NAVBAR ═══ */}
-      <header className="relative z-20 flex items-center justify-between px-6 py-5 max-w-7xl mx-auto w-full">
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-lg border border-primary/40 bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_15px_var(--primary)]">
-            <Sparkles className="h-4.5 w-4.5 text-primary" />
-          </div>
-          <span className="font-bold tracking-tight text-lg gradient-text-static uppercase">
-            Prompt Optimizer
-          </span>
-        </div>
-        <nav className="flex items-center gap-3">
-          {status === "authenticated" ? (
-            <Link href="/optimizer">
-              <Button className="btn-3d bg-primary hover:bg-primary/90 text-primary-foreground gap-2 font-semibold shadow-[0_0_20px_var(--primary)_inset]">
-                Open Optimizer
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          ) : (
-            <>
-              <Link href="/login">
-                <Button variant="ghost" className="text-muted-foreground hover:text-foreground">
-                  Login
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button className="btn-3d bg-primary hover:bg-primary/90 text-primary-foreground font-semibold shadow-[0_0_20px_var(--primary)_inset]">
-                  Get Started
-                  <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-              </Link>
-            </>
-          )}
-        </nav>
-      </header>
+      <Navbar showSections={true} />
+
+      {/* Spacer for fixed navbar */}
+      <div className="h-16" />
 
       {/* ═══ HERO SECTION ═══ */}
       <section className="relative z-10 flex flex-col items-center justify-center px-4 pt-16 pb-24 text-center min-h-[85vh]">
@@ -159,7 +131,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ FEATURES SECTION ═══ */}
-      <section className="relative z-10 px-4 py-24 max-w-7xl mx-auto w-full">
+      <section id="features" className="relative z-10 px-4 py-24 max-w-7xl mx-auto w-full scroll-mt-20">
         <ScrollReveal variant="fadeUp">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tight">
@@ -229,7 +201,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ HOW IT WORKS ═══ */}
-      <section className="relative z-10 px-4 py-24 border-t border-border/5">
+      <section id="how-it-works" className="relative z-10 px-4 py-24 border-t border-border/5 scroll-mt-20">
         <div className="max-w-5xl mx-auto">
           <ScrollReveal variant="fadeUp">
             <div className="text-center mb-16">
@@ -289,7 +261,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ STATS SECTION ═══ */}
-      <section className="relative z-10 px-4 py-20">
+      <section id="stats" className="relative z-10 px-4 py-20 scroll-mt-20">
         <ScrollReveal variant="scale">
           <div className="max-w-4xl mx-auto cyber-panel-premium p-10 sm:p-14">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
@@ -347,25 +319,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ FOOTER ═══ */}
-      <footer className="relative z-10 border-t border-border/10 py-10 mt-auto">
-        <div className="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="h-6 w-6 rounded border border-primary/30 bg-primary/10 flex items-center justify-center">
-              <Sparkles className="h-3 w-3 text-primary" />
-            </div>
-            <span className="text-sm text-muted-foreground/50">
-              © 2026 Prompt Optimizer
-            </span>
-          </div>
-          <div className="flex items-center gap-6 text-xs text-muted-foreground/40">
-            <span>Built for SDE III Standards</span>
-            <span className="w-px h-3 bg-border/20" />
-            <span>100% On-Device</span>
-            <span className="w-px h-3 bg-border/20" />
-            <span>Next.js 16</span>
-          </div>
-        </div>
-      </footer>
+      <FooterSection />
     </div>
   );
 }
