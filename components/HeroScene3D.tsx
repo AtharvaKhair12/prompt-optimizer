@@ -32,22 +32,30 @@ function NeuralNode({ position, delay }: { position: [number, number, number]; d
   );
 }
 
-function ConnectionLine({ start, end }: { start: [number, number, number]; end: [number, number, number] }) {
-  const lineObj = useMemo(() => {
+function ConnectionLines({ connections }: { connections: { start: [number, number, number]; end: [number, number, number] }[] }) {
+  const materialRef = useRef<THREE.LineBasicMaterial>(null);
+  
+  const lineSegments = useMemo(() => {
     const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array([...start, ...end]);
+    const positions = new Float32Array(connections.length * 6);
+    connections.forEach((conn, i) => {
+      positions.set([...conn.start, ...conn.end], i * 6);
+    });
     geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    const mat = new THREE.LineBasicMaterial({ color: "#8b5cf6", transparent: true, opacity: 0.2 });
-    return new THREE.Line(geo, mat);
-  }, [start, end]);
+    return geo;
+  }, [connections]);
 
   useFrame(({ clock }) => {
-    if (lineObj.material instanceof THREE.LineBasicMaterial) {
-      lineObj.material.opacity = 0.15 + Math.sin(clock.getElapsedTime() * 0.5) * 0.1;
+    if (materialRef.current) {
+      materialRef.current.opacity = 0.15 + Math.sin(clock.getElapsedTime() * 0.5) * 0.1;
     }
   });
 
-  return <primitive object={lineObj} />;
+  return (
+    <lineSegments geometry={lineSegments}>
+      <lineBasicMaterial ref={materialRef} color="#8b5cf6" transparent opacity={0.2} />
+    </lineSegments>
+  );
 }
 
 function NeuralNetwork() {
@@ -103,9 +111,7 @@ function NeuralNetwork() {
       {nodes.map((pos, i) => (
         <NeuralNode key={i} position={pos} delay={i * 0.3} />
       ))}
-      {connections.map((conn, i) => (
-        <ConnectionLine key={i} start={conn.start} end={conn.end} />
-      ))}
+      <ConnectionLines connections={connections} />
       {/* Central glowing orb */}
       <Float speed={2} rotationIntensity={0.5} floatIntensity={0.5}>
         <mesh>

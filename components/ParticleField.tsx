@@ -73,8 +73,8 @@ export function ParticleField({
     canvas.addEventListener("mouseleave", handleMouseLeave);
 
     const animate = () => {
-      const w = canvas.offsetWidth;
-      const h = canvas.offsetHeight;
+      const w = canvas.width / (window.devicePixelRatio || 1);
+      const h = canvas.height / (window.devicePixelRatio || 1);
       ctx.clearRect(0, 0, w, h);
 
       const particles = particlesRef.current;
