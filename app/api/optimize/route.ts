@@ -32,8 +32,8 @@ export async function POST(request: NextRequest) {
     // --- Rate Limiting ---
     const session = await auth() as any;
     const userId = session?.user?.id;
-    // Identify by user ID if logged in, otherwise by IP
-    const identifier = userId || request.ip || request.headers.get("x-forwarded-for") || "anonymous";
+    // Identify by user ID if logged in, otherwise by x-forwarded-for header
+    const identifier = userId || request.headers.get("x-forwarded-for") || "anonymous";
     
     if (isMongoConfigured) {
       const { success } = await checkRateLimit(identifier);
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
       } catch (err) {
         // Non-fatal — don't fail the request if history save fails
         console.error("[optimize] Failed to persist optimization:", err);
+      }
       }
     }
 
