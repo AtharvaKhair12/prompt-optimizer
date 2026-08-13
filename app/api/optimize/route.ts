@@ -12,6 +12,7 @@ import { auth } from "@/lib/auth";
 import { rewritePrompt } from "@/lib/rewriter";
 import { OptimizeRequestSchema } from "@/lib/types";
 import { getDb, isMongoConfigured } from "@/lib/mongodb";
+import { rateLimiter, hashPrompt, getCachedOptimization, cacheOptimization } from "@/lib/redis";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,6 +29,31 @@ export async function POST(request: NextRequest) {
 
     const { prompt } = parseResult.data;
 
+    // --- Rate Limiting ---
+    const session = await auth() as any;
+    const userId = session?.user?.id;
+    // Identify by user ID if logged in, otherwise by IP
+    const identifier = userId || request.ip || request.headers.get("x-forwarded-for") || "anonymous";
+    
+    if (rateLimiter) {
+      const { success } = await rateLimiter.limit(identifier);
+      if (!success) {
+        return NextResponse.json(
+          { error: "too_many_requests", message: "Rate limit exceeded. Please try again later." },
+          { status: 429 }
+        );
+      }
+    }
+
+    // --- Caching ---
+    const promptHash = await hashPrompt(prompt);
+    const cached = await getCachedOptimization(promptHash);
+    
+    if (cached) {
+      // If we found a cached response, return it directly to save time and LLM costs
+      return NextResponse.json(cached);
+    }
+
     // Call the LLM to rewrite the prompt dynamically
     const result = await rewritePrompt(prompt);
     
@@ -38,13 +64,15 @@ export async function POST(request: NextRequest) {
     const { scores: realScores } = scorePrompt(result.optimized_prompt);
     result.scores = realScores;
 
+    // Cache the result for future requests
+    await cacheOptimization(promptHash, result);
+
     // If signed in and MongoDB is configured, persist to optimization history
-    const session = await auth() as any;
-    if (isMongoConfigured && session?.user && session.user.id) {
+    if (isMongoConfigured && userId) {
       try {
         const db = getDb();
         await db.collection("optimizations").insertOne({
-          userId: (session.user as any).id,
+          userId: userId,
           originalPrompt: prompt,
           optimizedPrompt: result.optimized_prompt,
           scores: result.scores,
