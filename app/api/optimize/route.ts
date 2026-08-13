@@ -12,7 +12,7 @@ import { auth } from "@/lib/auth";
 import { rewritePrompt } from "@/lib/rewriter";
 import { OptimizeRequestSchema } from "@/lib/types";
 import { getDb, isMongoConfigured } from "@/lib/mongodb";
-import { rateLimiter, hashPrompt, getCachedOptimization, cacheOptimization } from "@/lib/redis";
+import { checkRateLimit, hashPrompt, getCachedOptimization, cacheOptimization } from "@/lib/cache";
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,8 +35,8 @@ export async function POST(request: NextRequest) {
     // Identify by user ID if logged in, otherwise by IP
     const identifier = userId || request.ip || request.headers.get("x-forwarded-for") || "anonymous";
     
-    if (rateLimiter) {
-      const { success } = await rateLimiter.limit(identifier);
+    if (isMongoConfigured) {
+      const { success } = await checkRateLimit(identifier);
       if (!success) {
         return NextResponse.json(
           { error: "too_many_requests", message: "Rate limit exceeded. Please try again later." },
@@ -47,7 +47,11 @@ export async function POST(request: NextRequest) {
 
     // --- Caching ---
     const promptHash = await hashPrompt(prompt);
-    const cached = await getCachedOptimization(promptHash);
+    let cached = null;
+    
+    if (isMongoConfigured) {
+      cached = await getCachedOptimization(promptHash);
+    }
     
     if (cached) {
       // If we found a cached response, return it directly to save time and LLM costs
@@ -64,11 +68,12 @@ export async function POST(request: NextRequest) {
     const { scores: realScores } = scorePrompt(result.optimized_prompt);
     result.scores = realScores;
 
-    // Cache the result for future requests
-    await cacheOptimization(promptHash, result);
+    if (isMongoConfigured) {
+      // Cache the result for future requests
+      await cacheOptimization(promptHash, result);
 
-    // If signed in and MongoDB is configured, persist to optimization history
-    if (isMongoConfigured && userId) {
+      // If signed in and MongoDB is configured, persist to optimization history
+      if (userId) {
       try {
         const db = getDb();
         await db.collection("optimizations").insertOne({
