@@ -1,4 +1,4 @@
-# 🗺️ Prompt Optimizer — Session Roadmap
+# 🗺️ Nexora Optimize — Session Roadmap
 
 > **Last updated**: 2026-08-04  
 > **Purpose**: Handoff doc so next session picks up with zero context loss.

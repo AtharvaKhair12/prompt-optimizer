@@ -1,4 +1,4 @@
-# PromptOptimizer
+# Nexora Optimize
 
 > AI-powered prompt engineering — transform vague prompts into precise, well-structured instructions that get better results from any LLM.
 
@@ -37,7 +37,7 @@
 
 ```bash
 git clone <your-repo-url>
-cd prompt-optimizer
+cd nexora-optimize
 npm install
 ```
 

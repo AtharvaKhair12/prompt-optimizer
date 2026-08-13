@@ -169,8 +169,8 @@ export default function Home() {
             className="text-center space-y-6 pt-8 pb-4"
           >
             <h1 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter uppercase leading-[0.9]">
-              <span className="gradient-text">Prompt</span>{" "}
-              <span className="text-foreground">Optimizer</span>
+              <span className="gradient-text">Nexora</span>{" "}
+              <span className="text-foreground">Optimize</span>
             </h1>
             <p className="text-muted-foreground max-w-xl mx-auto text-base sm:text-lg leading-relaxed">
               Transform vague prompts into precise, well-structured instructions

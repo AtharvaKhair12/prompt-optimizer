@@ -1,13 +1,13 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("Prompt Optimizer E2E", () => {
+test.describe("Nexora Optimize E2E", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
   });
 
   test("should load the main page with all key elements", async ({ page }) => {
     // Title
-    await expect(page).toHaveTitle(/PromptOptimizer/);
+    await expect(page).toHaveTitle(/Nexora Optimize/);
 
     // Hero text
     await expect(
@@ -102,7 +102,7 @@ test.describe("Prompt Optimizer E2E", () => {
   test("should navigate to login page", async ({ page }) => {
     await page.goto("/login");
     await expect(
-      page.getByText("Sign in to PromptOptimizer")
+      page.getByText("Sign in to Nexora Optimize")
     ).toBeVisible();
     await expect(page.getByText("Continue with Google")).toBeVisible();
     await expect(page.getByText("Continue with GitHub")).toBeVisible();

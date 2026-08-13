@@ -22,7 +22,7 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "PromptOptimizer — AI-Powered Prompt Engineering",
+  title: "Nexora Optimize — AI-Powered Prompt Engineering",
   description:
     "Transform your raw prompts into well-structured, optimized prompts for better LLM results. Uses heuristic analysis, semantic scoring, and Gemini AI rewriting. Free, private, bring-your-own-key.",
   keywords: [
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
     "prompt improvement",
   ],
   openGraph: {
-    title: "PromptOptimizer — AI-Powered Prompt Engineering",
+    title: "Nexora Optimize — AI-Powered Prompt Engineering",
     description:
       "Transform your raw prompts into well-structured, optimized prompts for better LLM results.",
     type: "website",

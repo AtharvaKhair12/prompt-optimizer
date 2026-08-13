@@ -122,12 +122,14 @@ export function Sidebar({ isOpen = true, onToggle, onNewChat, onRestore, onTempl
           <div className="p-4 flex flex-col gap-4 border-b border-primary/10">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="h-8 w-8 rounded-lg border border-primary/40 bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_12px_var(--primary)]">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                </div>
+                <img 
+                  src="/logo.png" 
+                  alt="Nexora Optimize Logo" 
+                  className="h-8 w-8 object-contain rounded-lg shadow-[0_0_12px_var(--primary)]"
+                />
                 <div>
                   <h1 className="text-sm font-bold tracking-tight uppercase gradient-text-static">
-                    Optimizer
+                    Nexora Optimize
                   </h1>
                   <div className="flex items-center gap-1 mt-0.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />

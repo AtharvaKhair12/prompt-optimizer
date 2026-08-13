@@ -80,11 +80,13 @@ export function Navbar({ showSections = true }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         {/* ─── Logo ─── */}
         <Link href="/" className="flex items-center gap-3 group">
-          <div className="h-8 w-8 rounded-lg border border-primary/40 bg-primary/10 flex items-center justify-center animate-pulse-neon shadow-[0_0_15px_var(--primary)] group-hover:scale-110 transition-transform">
-            <Sparkles className="h-4 w-4 text-primary" />
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Nexora Optimize Logo" 
+            className="h-8 w-8 object-contain rounded-lg shadow-[0_0_15px_var(--primary)] group-hover:scale-110 transition-transform"
+          />
           <span className="font-bold tracking-tight text-base gradient-text-static uppercase hidden sm:inline">
-            Prompt Optimizer
+            Nexora Optimize
           </span>
         </Link>
 

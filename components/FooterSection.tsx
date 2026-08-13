@@ -109,7 +109,7 @@ export function FooterSection() {
               >
                 <div className="space-y-3 pt-2">
                   <p>
-                    By accessing and using Prompt Optimizer (&quot;the Service&quot;), you agree to be bound by these Terms of Service. The Service is provided &quot;as-is&quot; without warranties of any kind, either express or implied.
+                    By accessing and using Nexora Optimize (&quot;the Service&quot;), you agree to be bound by these Terms of Service. The Service is provided &quot;as-is&quot; without warranties of any kind, either express or implied.
                   </p>
                   <h4>Usage</h4>
                   <p>
@@ -117,11 +117,11 @@ export function FooterSection() {
                   </p>
                   <h4>Intellectual Property</h4>
                   <p>
-                    The Service, its original content, features, and functionality are owned by the Prompt Optimizer team and are protected by international copyright, trademark, and other intellectual property laws.
+                    The Service, its original content, features, and functionality are owned by the Nexora Optimize team and are protected by international copyright, trademark, and other intellectual property laws.
                   </p>
                   <h4>Limitation of Liability</h4>
                   <p>
-                    In no event shall Prompt Optimizer, its directors, employees, or partners be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service.
+                    In no event shall Nexora Optimize, its directors, employees, or partners be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Service.
                   </p>
                   <h4>Modifications</h4>
                   <p>
@@ -135,9 +135,9 @@ export function FooterSection() {
                 title="Frequently Asked Questions"
               >
                 <div className="space-y-3 pt-2">
-                  <h4>What is Prompt Optimizer?</h4>
+                  <h4>What is Nexora Optimize?</h4>
                   <p>
-                    Prompt Optimizer is a professional-grade tool that transforms vague, unstructured prompts into precision-engineered instructions using our proprietary rule-based engine with 14 domain-specific optimization strategies.
+                    Nexora Optimize is a professional-grade tool that transforms vague, unstructured prompts into precision-engineered instructions using our proprietary rule-based engine with 14 domain-specific optimization strategies.
                   </p>
                   <h4>Is my data safe?</h4>
                   <p>
@@ -164,7 +164,7 @@ export function FooterSection() {
               >
                 <div className="space-y-3 pt-2">
                   <p>
-                    Your privacy is fundamentally important to us. This policy outlines how Prompt Optimizer handles your information.
+                    Your privacy is fundamentally important to us. This policy outlines how Nexora Optimize handles your information.
                   </p>
                   <h4>Data Collection</h4>
                   <p>
@@ -242,7 +242,7 @@ export function FooterSection() {
                 <Sparkles className="h-3 w-3 text-primary" />
               </div>
               <span className="text-sm text-muted-foreground/50">
-                © {new Date().getFullYear()} Prompt Optimizer
+                © {new Date().getFullYear()} Nexora Optimize
               </span>
             </div>
             <div className="flex items-center gap-6 text-xs text-muted-foreground/40">
