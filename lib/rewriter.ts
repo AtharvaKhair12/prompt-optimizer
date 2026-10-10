@@ -27,7 +27,7 @@ export async function rewritePrompt(prompt: string): Promise<OptimizationResult>
   }
 
   const result = await generateText({
-    model: groq('llama-3.3-70b-versatile'),
+    model: groq('qwen/qwen3.8-27b'),
     system: SYSTEM_PROMPT,
     prompt: `Original Prompt:\n${prompt}\n\nPlease rewrite this prompt to be significantly better. Reply ONLY with the valid JSON object.`,
   });
